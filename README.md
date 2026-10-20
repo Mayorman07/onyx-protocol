@@ -24,7 +24,7 @@ Copy `.env.example` to `.env.local` and fill in the values from your Supabase pr
 
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 
-1. `supabase/schema.sql` — creates the `dossiers` and `guests` tables, the `claim_dossier` function and enables RLS.
+1. `supabase/schema.sql` — creates the `dossiers` and `guests` tables, the `claim_dossier` function (callable only with the service role key) and enables RLS.
 2. `supabase/seed.sql` — inserts the 12 agent dossiers.
 
 `claim_dossier` locks a random unassigned dossier with `for update skip locked`, so two simultaneous RSVPs can never receive the same identity. Once all 12 are taken, the RSVP page shows "All field agents deployed — contact your handler."

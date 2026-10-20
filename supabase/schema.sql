@@ -45,5 +45,8 @@ begin
 end;
 $$;
 
+-- Only the server (service role) may claim dossiers; block direct calls via the public API.
+revoke execute on function claim_dossier(text, text) from public, anon, authenticated;
+
 alter table dossiers enable row level security;
 alter table guests enable row level security;
