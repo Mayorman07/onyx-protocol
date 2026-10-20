@@ -31,11 +31,12 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - It must **only** be imported inside Server Actions / server components — never in any file marked `"use client"`.
 - Before finishing any task that touches Supabase, search the codebase for `SERVICE_ROLE` and confirm every hit is in server-only code.
 
-## Commit conventions — commits must look professional
+## Commit conventions — commits must look professional and human-authored
 Use **Conventional Commits**: `type(scope): short imperative summary`.
 - Types: `feat`, `fix`, `chore`, `refactor`, `style`, `docs`, `test`, `build`.
 - Summary is imperative and lowercase ("add rsvp form", not "Added RSVP form"), no trailing period, ≤ 72 chars.
 - One logical change per commit. Never commit `wip`, `stuff`, `asdf`, or bundle unrelated changes.
+- **No AI footprint.** Do NOT add any tool attribution, emoji footers, "Generated with…" lines, or `Co-Authored-By: Claude` / `Co-Authored-By: anthropic` trailers to commit messages. Commits must read as if written by the human developer. The commit body is optional; when used, keep it a plain human-style sentence or two with no tool branding.
 - Examples:
   - `feat(rsvp): add dossier claim server action`
   - `feat(invite): port onyx landing page from reference html`
