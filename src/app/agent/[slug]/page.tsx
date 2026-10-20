@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-// Render on request and block until the dossier is fetched, so unknown codenames get a real 404.
+// Render on request and block until the dossier is fetched, so unknown slugs get a real 404.
 export const instant = false;
 
 export const metadata: Metadata = {
@@ -20,20 +20,20 @@ type Dossier = {
   rival: string;
 };
 
-async function getDossier(codename: string): Promise<Dossier | null> {
+async function getDossier(slug: string): Promise<Dossier | null> {
   const { data, error } = await supabaseAdmin()
     .from("dossiers")
     .select("codename, display_name, archetype, cover_story, secret_motive, ally, rival")
-    .eq("codename", codename)
+    .eq("slug", slug)
     .maybeSingle<Dossier>();
 
   if (error) throw new Error(`Dossier lookup failed: ${error.message}`);
   return data;
 }
 
-export default async function AgentPage({ params }: PageProps<"/agent/[codename]">) {
-  const { codename } = await params;
-  const dossier = await getDossier(codename);
+export default async function AgentPage({ params }: PageProps<"/agent/[slug]">) {
+  const { slug } = await params;
+  const dossier = await getDossier(slug);
   if (!dossier) notFound();
 
   const fields: [string, string][] = [

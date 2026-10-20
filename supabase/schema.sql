@@ -8,7 +8,9 @@ create table dossiers (
   ally text not null,
   rival text not null,
   is_assigned boolean not null default false,
-  assigned_at timestamptz
+  assigned_at timestamptz,
+  -- Unguessable URL key (codename + random suffix), set when the dossier is claimed.
+  slug text unique
 );
 
 create table guests (
@@ -27,6 +29,7 @@ as $$
 declare
   v_id uuid;
   v_codename text;
+  v_slug text;
 begin
   select id, codename into v_id, v_codename
   from dossiers
@@ -39,9 +42,12 @@ begin
     raise exception 'ALL_DOSSIERS_ASSIGNED';
   end if;
 
-  update dossiers set is_assigned = true, assigned_at = now() where id = v_id;
+  -- 10 hex chars (40 random bits) from gen_random_uuid, which uses a secure RNG.
+  v_slug := v_codename || '-' || left(replace(gen_random_uuid()::text, '-', ''), 10);
+
+  update dossiers set is_assigned = true, assigned_at = now(), slug = v_slug where id = v_id;
   insert into guests (name, contact, dossier_id) values (p_name, p_contact, v_id);
-  return v_codename;
+  return v_slug;
 end;
 $$;
 

@@ -4,7 +4,7 @@ A spy / 1920s-speakeasy murder-mystery party invite. Guests RSVP and are instant
 
 - `/` — the invite
 - `/rsvp` — name + contact form; claims a random unassigned dossier
-- `/agent/[codename]` — the guest's dossier
+- `/agent/[slug]` — the guest's dossier, e.g. `/agent/the-magpie-3f9a1c07be`
 
 Built with Next.js (App Router, TypeScript) and Supabase.
 
@@ -29,11 +29,13 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 
 `claim_dossier` locks a random unassigned dossier with `for update skip locked`, so two simultaneous RSVPs can never receive the same identity. Once all 12 are taken, the RSVP page shows "All field agents deployed — contact your handler."
 
-To reset between test runs:
+Each claim also generates the dossier's `slug`: its codename plus a random 10-character suffix. That slug is the guest's private URL, so dossiers can't be found by guessing codenames, and unclaimed dossiers have no page at all.
+
+To reset between test runs (this also clears the slugs, so old dossier links stop working):
 
 ```sql
 delete from guests;
-update dossiers set is_assigned = false, assigned_at = null;
+update dossiers set is_assigned = false, assigned_at = null, slug = null;
 ```
 
 ## 3. Run it

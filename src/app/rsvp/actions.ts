@@ -24,10 +24,10 @@ export async function rsvp(_prev: RsvpState, formData: FormData): Promise<RsvpSt
   const result = await claimDossier(name, contact);
   if ("error" in result) return { error: result.error };
 
-  redirect(`/agent/${encodeURIComponent(result.codename)}`);
+  redirect(`/agent/${encodeURIComponent(result.slug)}`);
 }
 
-async function claimDossier(name: string, contact: string): Promise<{ codename: string } | { error: string }> {
+async function claimDossier(name: string, contact: string): Promise<{ slug: string } | { error: string }> {
   const { data, error } = await supabaseAdmin().rpc("claim_dossier", {
     p_name: name,
     p_contact: contact,
@@ -38,5 +38,5 @@ async function claimDossier(name: string, contact: string): Promise<{ codename: 
     console.error("claim_dossier failed:", error.message);
     return { error: MESSAGES.failed };
   }
-  return { codename: data as string };
+  return { slug: data as string };
 }

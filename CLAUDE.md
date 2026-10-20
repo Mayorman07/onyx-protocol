@@ -17,8 +17,8 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 
 ## Routes
 - `/` — the invite (typewriter decrypt intro, step-by-step reveal, redacted location). RSVP button → `/rsvp`.
-- `/rsvp` — themed form (name + contact) → Server Action → Supabase `claim_dossier` RPC → redirect to `/agent/[codename]`.
-- `/agent/[codename]` — the guest's personal dossier page, server-rendered from Supabase.
+- `/rsvp` — themed form (name + contact) → Server Action → Supabase `claim_dossier` RPC → redirect to `/agent/[slug]`.
+- `/agent/[slug]` — the guest's personal dossier page, server-rendered from Supabase. The slug is the codename plus a random suffix generated at claim time (e.g. `the-magpie-3f9a1c07be`), so dossier URLs can't be guessed.
 
 ## Environment variables (in `.env.local`, never committed)
 - `NEXT_PUBLIC_SUPABASE_URL`
