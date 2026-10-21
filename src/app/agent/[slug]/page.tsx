@@ -13,17 +13,17 @@ export const metadata: Metadata = {
 type Dossier = {
   codename: string;
   display_name: string;
-  archetype: string;
   cover_story: string;
   secret_motive: string;
-  ally: string;
-  rival: string;
+  ally: string | null;
+  rival: string | null;
+  storyline: string | null;
 };
 
 async function getDossier(slug: string): Promise<Dossier | null> {
   const { data, error } = await supabaseAdmin()
     .from("dossiers")
-    .select("codename, display_name, archetype, cover_story, secret_motive, ally, rival")
+    .select("codename, display_name, cover_story, secret_motive, ally, rival, storyline")
     .eq("slug", slug)
     .maybeSingle<Dossier>();
 
@@ -36,13 +36,16 @@ export default async function AgentPage({ params }: PageProps<"/agent/[slug]">) 
   const dossier = await getDossier(slug);
   if (!dossier) notFound();
 
-  const fields: [string, string][] = [
-    ["Archetype", dossier.archetype],
-    ["Cover story", dossier.cover_story],
-    ["Secret motive", dossier.secret_motive],
-    ["Ally", dossier.ally],
-    ["Rival", dossier.rival],
-  ];
+  // Ally, rival and storyline are optional; only show what the host has filled in.
+  const fields = (
+    [
+      ["Cover story", dossier.cover_story],
+      ["Secret motive", dossier.secret_motive],
+      ["Ally", dossier.ally],
+      ["Rival", dossier.rival],
+      ["Storyline", dossier.storyline],
+    ] satisfies [string, string | null][]
+  ).filter((field): field is [string, string] => Boolean(field[1]));
 
   return (
     <main>

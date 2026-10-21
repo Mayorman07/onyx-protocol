@@ -1,13 +1,14 @@
-insert into dossiers (display_name, codename, archetype, cover_story, secret_motive, ally, rival) values
-  ('THE MAGPIE', 'the-magpie', 'A venture capitalist who collects secrets like jewels', 'Funded half the room; everyone owes you a favour', 'Acquire the access codes to the £30M asset before midnight', 'THE CARTOGRAPHER', 'THE WIDOW'),
-  ('THE WIDOW', 'the-widow', 'Inherited an empire under suspicious circumstances', 'The grieving heir, gracious and untouchable', 'Protect your inheritance from a clawback only you know is coming', 'THE PRIEST', 'THE MAGPIE'),
-  ('THE CARTOGRAPHER', 'the-cartographer', 'A fixer who maps everyone''s weaknesses', 'The quiet one who knows where the bodies are', 'Sell your map of the room to the highest bidder tonight', 'THE MAGPIE', 'THE SOMMELIER'),
-  ('THE SOMMELIER', 'the-sommelier', 'A connoisseur whose hobby is poisons', 'Pouring the finest in the house, charming everyone', 'Settle an old debt before the clock strikes twelve', 'THE WIDOW', 'THE CARTOGRAPHER'),
-  ('THE ARCHITECT', 'the-architect', 'Built the vault holding the asset', 'The genius who designed the unbreakable', 'Prove the vault is flawless — or that you already cracked it', 'THE BANKER', 'THE MAGPIE'),
-  ('THE CLOCK', 'the-clock', 'Keeps everyone''s timelines and alibis', 'The punctual, forgettable observer', 'Blackmail the one person whose alibi doesn''t hold', 'THE ARCHITECT', 'THE PRIEST'),
-  ('THE PRIEST', 'the-priest', 'Trusted confessor of the entire room', 'The one everyone tells their secrets to', 'You are the mastermind of tonight''s betrayal', 'THE WIDOW', 'THE CLOCK'),
-  ('THE DIPLOMAT', 'the-diplomat', 'Brokered the deal that made the asset go live', 'The smooth operator who made it all happen', 'Hide that you skimmed millions off the top of the deal', 'THE SOMMELIER', 'THE SIREN'),
-  ('THE SIREN', 'the-siren', 'A performer who overhears everything', 'The dazzling entertainer of the evening', 'Find out who really killed your patron last winter', 'THE GHOST', 'THE DIPLOMAT'),
-  ('THE GHOST', 'the-ghost', 'Supposedly died years ago', 'A stranger no one quite recognises', 'Expose whoever faked your death and stole your name', 'THE SIREN', 'THE WIDOW'),
-  ('THE BANKER', 'the-banker', 'Holds the only key to move the asset', 'The nervous VIP everyone is suddenly very nice to', 'Simply survive the night — everyone wants what you hold', 'THE ARCHITECT', 'THE MAGPIE'),
-  ('THE JOURNALIST', 'the-journalist', 'Undercover to break the story of the decade', 'A plus-one no one invited', 'Get one person on record confessing before you leave', 'THE GHOST', 'THE PRIEST');
+-- Starter role library. Edit, add or remove rows freely.
+insert into dossiers (codename, display_name, cover_story, secret_motive, ally, rival) values
+  ('the-magpie', 'THE MAGPIE', 'Funded half the room; everyone owes you a favour', 'Acquire the access codes to the £30M asset before midnight', 'THE CARTOGRAPHER', 'THE WIDOW'),
+  ('the-widow', 'THE WIDOW', 'The grieving heir, gracious and untouchable', 'Protect your inheritance from a clawback only you know is coming', 'THE PRIEST', 'THE MAGPIE'),
+  ('the-cartographer', 'THE CARTOGRAPHER', 'The quiet one who knows where the bodies are', 'Sell your map of the room to the highest bidder tonight', 'THE MAGPIE', 'THE SOMMELIER'),
+  ('the-sommelier', 'THE SOMMELIER', 'Pouring the finest in the house, charming everyone', 'Settle an old debt before the clock strikes twelve', 'THE WIDOW', 'THE CARTOGRAPHER'),
+  ('the-architect', 'THE ARCHITECT', 'The genius who designed the unbreakable', 'Prove the vault is flawless — or that you already cracked it', 'THE BANKER', 'THE MAGPIE'),
+  ('the-clock', 'THE CLOCK', 'The punctual, forgettable observer', 'Blackmail the one person whose alibi doesn''t hold', 'THE ARCHITECT', 'THE PRIEST'),
+  ('the-priest', 'THE PRIEST', 'The one everyone tells their secrets to', 'You are the mastermind of tonight''s betrayal', 'THE WIDOW', 'THE CLOCK'),
+  ('the-diplomat', 'THE DIPLOMAT', 'The smooth operator who made it all happen', 'Hide that you skimmed millions off the top of the deal', 'THE SOMMELIER', 'THE SIREN'),
+  ('the-siren', 'THE SIREN', 'The dazzling entertainer of the evening', 'Find out who really killed your patron last winter', 'THE GHOST', 'THE DIPLOMAT'),
+  ('the-ghost', 'THE GHOST', 'A stranger no one quite recognises', 'Expose whoever faked your death and stole your name', 'THE SIREN', 'THE WIDOW'),
+  ('the-banker', 'THE BANKER', 'The nervous VIP everyone is suddenly very nice to', 'Simply survive the night — everyone wants what you hold', 'THE ARCHITECT', 'THE MAGPIE'),
+  ('the-journalist', 'THE JOURNALIST', 'A plus-one no one invited', 'Get one person on record confessing before you leave', 'THE GHOST', 'THE PRIEST');
