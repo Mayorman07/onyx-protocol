@@ -12,6 +12,7 @@ create table dossiers (
   id uuid primary key default gen_random_uuid(),
   codename text unique not null,
   display_name text not null,
+  archetype text,
   cover_story text not null,
   secret_motive text not null,
   ally text,

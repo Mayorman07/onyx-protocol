@@ -34,6 +34,8 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 1. `supabase/schema.sql` — creates the `signups` and `dossiers` tables and enables RLS on both.
 2. `supabase/seed.sql` — inserts 12 starter roles into `dossiers`.
 
+Each role needs a `codename`, `display_name`, `cover_story` and `secret_motive`. `archetype`, `ally`, `rival` and `storyline` are optional, and the dossier page only shows the ones that are filled in.
+
 The 12 roles are only a starting library. Edit, add or remove `dossiers` rows directly in Supabase whenever you like; nothing in the app depends on how many there are.
 
 A dossier only gets a page once its `slug` is set (in Phase 2, when it's sent). Use the codename plus a random suffix, such as `the-magpie-3f9a1c07be`, so dossier URLs can't be guessed.
