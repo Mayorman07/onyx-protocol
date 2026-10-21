@@ -31,7 +31,7 @@ Copy `.env.example` to `.env.local` and fill in the values from your Supabase pr
 
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 
-1. `supabase/schema.sql` — creates the `signups` and `dossiers` tables and enables RLS on both.
+1. `supabase/schema.sql` — creates the `signups` and `dossiers` tables and enables RLS on both. `signups.email` is unique (emails are saved lowercased), so each address can enlist once; a repeat submission shows "You're already enlisted, Agent — await your instructions" instead of adding a row.
 2. `supabase/seed.sql` — inserts 12 starter roles into `dossiers`.
 
 Each role needs a `codename`, `display_name`, `cover_story` and `secret_motive`. `archetype`, `ally`, `rival` and `storyline` are optional, and the dossier page only shows the ones that are filled in.
@@ -42,7 +42,7 @@ A dossier only gets a page once its `slug` is set (in Phase 2, when it's sent). 
 
 ### Resetting
 
-To rebuild from scratch (needed if you ran an earlier version of the schema, because the table shapes changed and `guests` was replaced by `signups`), run:
+To rebuild from scratch, run the SQL below. You need this if you ran any earlier version of the schema: `guests` was replaced by `signups`, `dossiers` changed shape (including the restored `archetype` column), and `signups.email` is now unique.
 
 ```sql
 drop table if exists guests cascade;

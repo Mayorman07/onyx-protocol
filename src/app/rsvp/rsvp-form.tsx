@@ -8,13 +8,25 @@ const initialState: RsvpState = {};
 export function RsvpForm() {
   const [state, formAction, pending] = useActionState(rsvp, initialState);
 
-  if (state.enlisted) {
+  if (state.outcome === "enlisted") {
     return (
       <div role="status">
         <h2>
           Mission <span>Accepted</span>
         </h2>
         <p>Your enlistment is logged. Await further instructions, Agent.</p>
+        <p className="stamp">Keep your eyes open — the walls have ears.</p>
+      </div>
+    );
+  }
+
+  if (state.outcome === "already-enlisted") {
+    return (
+      <div role="status">
+        <h2>
+          Already <span>Enlisted</span>
+        </h2>
+        <p>You&apos;re already enlisted, Agent — await your instructions.</p>
         <p className="stamp">Keep your eyes open — the walls have ears.</p>
       </div>
     );

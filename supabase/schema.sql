@@ -2,7 +2,8 @@
 create table signups (
   id uuid primary key default gen_random_uuid(),
   name text not null,
-  email text not null,
+  -- Stored lowercased by the app, so one enlistment per address.
+  email text not null unique,
   status text not null default 'enlisted' check (status in ('enlisted', 'cast', 'sent')),
   created_at timestamptz not null default now()
 );

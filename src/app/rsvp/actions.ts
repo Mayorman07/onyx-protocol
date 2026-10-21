@@ -2,10 +2,11 @@
 
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-export type RsvpState = { error?: string; enlisted?: boolean };
+export type RsvpState = { error?: string; outcome?: "enlisted" | "already-enlisted" };
 
 const MAX_LENGTH = 120;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UNIQUE_VIOLATION = "23505";
 
 const MESSAGES = {
   missingName: "State your name, agent.",
@@ -23,6 +24,7 @@ export async function rsvp(_prev: RsvpState, formData: FormData): Promise<RsvpSt
   if (name.length > MAX_LENGTH || email.length > MAX_LENGTH) return { error: MESSAGES.tooLong };
 
   const { error } = await supabaseAdmin().from("signups").insert({ name, email });
+  if (error?.code === UNIQUE_VIOLATION) return { outcome: "already-enlisted" };
   if (error) {
     console.error("signup insert failed:", error.message);
     return { error: MESSAGES.failed };
@@ -30,5 +32,5 @@ export async function rsvp(_prev: RsvpState, formData: FormData): Promise<RsvpSt
 
   // TODO(resend): send enlistment confirmation email to {email}
 
-  return { enlisted: true };
+  return { outcome: "enlisted" };
 }
