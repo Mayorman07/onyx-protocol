@@ -17,8 +17,13 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 
 ## Routes
 - `/` — the invite (typewriter decrypt intro, step-by-step reveal, redacted location). RSVP button → `/rsvp`.
-- `/rsvp` — themed form (name + contact) → Server Action → Supabase `claim_dossier` RPC → redirect to `/agent/[slug]`.
-- `/agent/[slug]` — the guest's personal dossier page, server-rendered from Supabase. The slug is the codename plus a random suffix generated at claim time (e.g. `the-magpie-3f9a1c07be`), so dossier URLs can't be guessed.
+- `/rsvp` — themed enlistment form (name + email) → Server Action → insert into `signups` → on-screen "MISSION ACCEPTED" confirmation. No dossier is assigned here.
+- `/agent/[slug]` — a guest's personal dossier page, server-rendered from Supabase by `dossiers.slug`; themed 404 otherwise. The slug is the codename plus a random suffix (e.g. `the-magpie-3f9a1c07be`) so URLs can't be guessed.
+
+## Two-phase model
+- **Phase 1 (built):** public enlistment into `signups`.
+- **Phase 2 (not built yet):** the host casts each signup a role from the `dossiers` library and emails it, setting `assigned_to_email`, `slug` and `sent_at`. Email sending (Resend), the admin dashboard and auth are later checkpoints.
+- `dossiers` is an editable library with no fixed size; never hard-code the role count.
 
 ## Environment variables (in `.env.local`, never committed)
 - `NEXT_PUBLIC_SUPABASE_URL`

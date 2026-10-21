@@ -1,12 +1,19 @@
 # The Onyx Protocol
 
-A spy / 1920s-speakeasy murder-mystery party invite. Guests RSVP and are instantly assigned a secret agent identity, served on their own dossier page.
+A spy / 1920s-speakeasy murder-mystery party invite. Guests enlist through the site, and the host casts each of them a secret agent identity, served on their own dossier page.
 
 - `/` — the invite
-- `/rsvp` — name + contact form; claims a random unassigned dossier
-- `/agent/[slug]` — the guest's dossier, e.g. `/agent/the-magpie-3f9a1c07be`
+- `/rsvp` — name + email enlistment form
+- `/agent/[slug]` — a guest's dossier, e.g. `/agent/the-magpie-3f9a1c07be` (themed 404 if no dossier has that slug)
 
 Built with Next.js (App Router, TypeScript) and Supabase.
+
+## How it works
+
+The party runs in two phases:
+
+1. **Enlistment (live now).** A guest submits their name and email at `/rsvp`. A server action adds them to the `signups` table with status `enlisted`, and the page shows a "MISSION ACCEPTED" confirmation. No dossier is assigned at this point.
+2. **Casting (coming later).** The host reviews the signups and casts each guest a role from the `dossiers` library: cover story, motive, ally, rival and storyline. The role is then emailed to the guest, and its `slug` becomes their private dossier URL. The admin screens and email sending are not built yet.
 
 ## 1. Environment variables
 
@@ -16,7 +23,7 @@ Copy `.env.example` to `.env.local` and fill in the values from your Supabase pr
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL. Safe to expose. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key. Safe to expose; RLS blocks it from reading or writing the tables. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Bypasses row level security. Used only on the server (`src/lib/supabase-admin.ts`) to claim and read dossiers. Never give it a `NEXT_PUBLIC_` prefix. |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Bypasses row level security. Used only on the server (`src/lib/supabase-admin.ts`) to record signups and read dossiers. Never give it a `NEXT_PUBLIC_` prefix. |
 
 `.env.local` is git-ignored. On Vercel, add the same three variables under **Project Settings → Environment Variables**.
 
@@ -24,18 +31,30 @@ Copy `.env.example` to `.env.local` and fill in the values from your Supabase pr
 
 In the Supabase dashboard, open **SQL Editor** and run, in order:
 
-1. `supabase/schema.sql` — creates the `dossiers` and `guests` tables, the `claim_dossier` function (callable only with the service role key) and enables RLS.
-2. `supabase/seed.sql` — inserts the 12 agent dossiers.
+1. `supabase/schema.sql` — creates the `signups` and `dossiers` tables and enables RLS on both.
+2. `supabase/seed.sql` — inserts 12 starter roles into `dossiers`.
 
-`claim_dossier` locks a random unassigned dossier with `for update skip locked`, so two simultaneous RSVPs can never receive the same identity. Once all 12 are taken, the RSVP page shows "All field agents deployed — contact your handler."
+The 12 roles are only a starting library. Edit, add or remove `dossiers` rows directly in Supabase whenever you like; nothing in the app depends on how many there are.
 
-Each claim also generates the dossier's `slug`: its codename plus a random 10-character suffix. That slug is the guest's private URL, so dossiers can't be found by guessing codenames, and unclaimed dossiers have no page at all.
+A dossier only gets a page once its `slug` is set (in Phase 2, when it's sent). Use the codename plus a random suffix, such as `the-magpie-3f9a1c07be`, so dossier URLs can't be guessed.
 
-To reset between test runs (this also clears the slugs, so old dossier links stop working):
+### Resetting
+
+To rebuild from scratch (needed if you ran an earlier version of the schema, because the table shapes changed and `guests` was replaced by `signups`), run:
 
 ```sql
-delete from guests;
-update dossiers set is_assigned = false, assigned_at = null, slug = null;
+drop table if exists guests cascade;
+drop table if exists signups cascade;
+drop table if exists dossiers cascade;
+drop function if exists claim_dossier(text, text);
+```
+
+Then re-run `schema.sql` and `seed.sql`.
+
+To clear test signups without touching the role library:
+
+```sql
+delete from signups;
 ```
 
 ## 3. Run it
