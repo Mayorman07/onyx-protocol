@@ -280,6 +280,120 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
+/* Admin */
+
+main.wide {
+  max-width: 960px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.signups {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 18px;
+  font-size: 0.9rem;
+}
+
+.signups th {
+  text-align: left;
+  color: var(--lemon);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.signups td {
+  padding: 10px 6px;
+  border-bottom: 1px dashed var(--line);
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.signups td.actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.status-select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--lemon);
+}
+
+button.small {
+  margin: 0 0 0 8px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+}
+
+button.danger {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+button.danger:hover {
+  background: var(--red);
+  color: #fff;
+}
+
+/* Narrow screens: each signup becomes a stacked card with inline labels. */
+@media (max-width: 640px) {
+  .signups thead {
+    display: none;
+  }
+
+  .signups tr {
+    display: block;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+
+  .signups td {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 4px 0;
+    border: 0;
+  }
+
+  .signups td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 80px;
+    color: var(--lemon);
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .signups td.actions {
+    justify-content: flex-start;
+    padding-top: 8px;
+  }
+
+  .signups td.actions button.small:first-child {
+    margin-left: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
