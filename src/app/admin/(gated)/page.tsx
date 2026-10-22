@@ -3,6 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 import type { SignupStatus } from "../statuses";
 import { SignupControls } from "./signup-controls";
 
+// Reads the session cookie, so render on request (as the layout does).
+export const instant = false;
+
 type Signup = {
   id: string;
   name: string;
