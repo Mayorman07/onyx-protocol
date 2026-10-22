@@ -18,14 +18,17 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 ## Routes
 - `/` — the invite (typewriter decrypt intro, step-by-step reveal, redacted location). RSVP button → `/rsvp`.
 - `/rsvp` — themed enlistment form (name + email) → Server Action → insert into `signups` → on-screen "MISSION ACCEPTED" confirmation. No dossier is assigned here.
-- `/agent/[slug]` — a guest's personal dossier page, server-rendered from Supabase by `dossiers.slug`; themed 404 otherwise. The slug is the codename plus a random suffix (e.g. `the-magpie-3f9a1c07be`) so URLs can't be guessed.
+- `/agent/[slug]` — a cast guest's dossier, server-rendered (service role) from the **`signups`** row with that `slug` and status `cast`/`sent`; themed 404 otherwise. The slug is the codename plus a random suffix (e.g. `the-magpie-3f9a1c07be`) so URLs can't be guessed.
 - `/admin/login` — magic-link sign-in (`signInWithOtp`) → `/auth/callback` route handler exchanges the code → `/admin`.
-- `/admin` — hosts' signups dashboard (view, change status, delete). Gated in `app/admin/(gated)/layout.tsx` and, independently, by RLS on `signups` via `is_admin()`. Allowlist = the `admins` table (`supabase/admins.sql`), nowhere else.
+- `/admin` — hosts' signups dashboard (view, change status, delete, link to casting). `/admin/cast/[id]` — cast a guest. `/admin/library` — role library CRUD. All gated in `app/admin/(gated)/layout.tsx` and, independently, by RLS via `is_admin()`. Allowlist = the `admins` table (`supabase/admins.sql`), nowhere else.
 
-## Two-phase model
-- **Phase 1 (built):** public enlistment into `signups`.
-- **Phase 2 (in progress):** admin auth and the signups dashboard are built. Still to come: casting each signup a role from the `dossiers` library and emailing it (Resend), setting `assigned_to_email`, `slug` and `sent_at`.
-- `dossiers` is an editable library with no fixed size; never hard-code the role count.
+## Data model
+- `signups` — enlisted guests. Casting **copies** a library role onto the guest's own columns (`display_name`, `codename`, `archetype`, `cover_story`, `secret_motive`, `ally`, `rival`, `storyline`), sets `status = 'cast'` and a `slug`. Editing or deleting a library role never touches a cast guest.
+- `dossiers` — the editable role library (templates only), no fixed size; never hard-code the role count. Its `assigned_to_email`/`slug`/`sent_at` columns are legacy and unused.
+- A codename may be held by only one `cast`/`sent` guest (app check + partial unique index `signups_cast_codename_key`). Un-cast clears the role and slug.
+- Role fields are defined once in `src/app/admin/role-fields.ts` (shared by the library editor and casting form).
+- SQL files, in run order: `schema.sql`, `seed.sql`, `admins.sql`, `casting.sql` (the last two are idempotent; `casting.sql` also upgrades older databases in place). Never instruct a drop-and-rebuild; the database has real data.
+- Next checkpoint: "Send dossier" email via Resend — see `TODO(resend)` stubs.
 
 ## Environment variables (in `.env.local`, never committed)
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -37,7 +40,7 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - It must **never** carry the `NEXT_PUBLIC_` prefix.
 - It must **only** be imported inside Server Actions / server components — never in any file marked `"use client"`.
 - Before finishing any task that touches Supabase, search the codebase for `SERVICE_ROLE` and confirm every hit is in server-only code.
-- The service-role client (`src/lib/supabase-admin.ts`) is for the public enlistment insert and dossier reads only. **All admin reads/writes use the signed-in user's client** (`src/lib/supabase/server.ts`, anon key + session cookies) so RLS enforces the allowlist. Never route admin data through the service role.
+- The service-role client (`src/lib/supabase-admin.ts`) is for the public enlistment insert and the public `/agent/[slug]` read only. **All admin reads/writes use the signed-in user's client** (`src/lib/supabase/server.ts`, anon key + session cookies) so RLS enforces the allowlist. Never route admin data through the service role.
 - Session refresh lives in `src/proxy.ts` (Next 16's replacement for `middleware.ts`), scoped to `/admin` and `/auth`.
 
 ## Commit conventions — commits must look professional and human-authored
