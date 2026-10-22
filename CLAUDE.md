@@ -19,10 +19,12 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - `/` — the invite (typewriter decrypt intro, step-by-step reveal, redacted location). RSVP button → `/rsvp`.
 - `/rsvp` — themed enlistment form (name + email) → Server Action → insert into `signups` → on-screen "MISSION ACCEPTED" confirmation. No dossier is assigned here.
 - `/agent/[slug]` — a guest's personal dossier page, server-rendered from Supabase by `dossiers.slug`; themed 404 otherwise. The slug is the codename plus a random suffix (e.g. `the-magpie-3f9a1c07be`) so URLs can't be guessed.
+- `/admin/login` — magic-link sign-in (`signInWithOtp`) → `/auth/callback` route handler exchanges the code → `/admin`.
+- `/admin` — hosts' signups dashboard (view, change status, delete). Gated in `app/admin/(gated)/layout.tsx` and, independently, by RLS on `signups` via `is_admin()`. Allowlist = the `admins` table (`supabase/admins.sql`), nowhere else.
 
 ## Two-phase model
 - **Phase 1 (built):** public enlistment into `signups`.
-- **Phase 2 (not built yet):** the host casts each signup a role from the `dossiers` library and emails it, setting `assigned_to_email`, `slug` and `sent_at`. Email sending (Resend), the admin dashboard and auth are later checkpoints.
+- **Phase 2 (in progress):** admin auth and the signups dashboard are built. Still to come: casting each signup a role from the `dossiers` library and emailing it (Resend), setting `assigned_to_email`, `slug` and `sent_at`.
 - `dossiers` is an editable library with no fixed size; never hard-code the role count.
 
 ## Environment variables (in `.env.local`, never committed)
@@ -35,6 +37,8 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - It must **never** carry the `NEXT_PUBLIC_` prefix.
 - It must **only** be imported inside Server Actions / server components — never in any file marked `"use client"`.
 - Before finishing any task that touches Supabase, search the codebase for `SERVICE_ROLE` and confirm every hit is in server-only code.
+- The service-role client (`src/lib/supabase-admin.ts`) is for the public enlistment insert and dossier reads only. **All admin reads/writes use the signed-in user's client** (`src/lib/supabase/server.ts`, anon key + session cookies) so RLS enforces the allowlist. Never route admin data through the service role.
+- Session refresh lives in `src/proxy.ts` (Next 16's replacement for `middleware.ts`), scoped to `/admin` and `/auth`.
 
 ## Commit conventions — commits must look professional and human-authored
 Use **Conventional Commits**: `type(scope): short imperative summary`.
