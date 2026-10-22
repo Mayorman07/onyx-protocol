@@ -10,12 +10,13 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+// A cast guest's own copy of their role, stored on their signup row.
 type Dossier = {
-  codename: string;
-  display_name: string;
+  codename: string | null;
+  display_name: string | null;
   archetype: string | null;
-  cover_story: string;
-  secret_motive: string;
+  cover_story: string | null;
+  secret_motive: string | null;
   ally: string | null;
   rival: string | null;
   storyline: string | null;
@@ -23,9 +24,10 @@ type Dossier = {
 
 async function getDossier(slug: string): Promise<Dossier | null> {
   const { data, error } = await supabaseAdmin()
-    .from("dossiers")
+    .from("signups")
     .select("codename, display_name, archetype, cover_story, secret_motive, ally, rival, storyline")
     .eq("slug", slug)
+    .in("status", ["cast", "sent"])
     .maybeSingle<Dossier>();
 
   if (error) throw new Error(`Dossier lookup failed: ${error.message}`);
@@ -37,7 +39,7 @@ export default async function AgentPage({ params }: PageProps<"/agent/[slug]">) 
   const dossier = await getDossier(slug);
   if (!dossier) notFound();
 
-  // Archetype, ally, rival and storyline are optional; only show what the host has filled in.
+  // Only show what the host has filled in.
   const fields = (
     [
       ["Archetype", dossier.archetype],
@@ -53,8 +55,8 @@ export default async function AgentPage({ params }: PageProps<"/agent/[slug]">) 
     <main>
       <section className="step show">
         <span className="tag">TOP SECRET</span>
-        <p className="dim">{`// Operative dossier · ${dossier.codename}`}</p>
-        <h1>{dossier.display_name}</h1>
+        <p className="dim">{`// Operative dossier${dossier.codename ? ` · ${dossier.codename}` : ""}`}</p>
+        <h1>{dossier.display_name ?? "Classified"}</h1>
         {fields.map(([label, value]) => (
           <div className="row stacked" key={label}>
             <b>{label}</b>
