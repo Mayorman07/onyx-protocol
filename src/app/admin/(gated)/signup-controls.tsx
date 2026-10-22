@@ -2,14 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { deleteSignup, setSignupStatus } from "../actions";
-import { SIGNUP_STATUSES, type SignupStatus } from "../statuses";
+import { CAST_STATUSES, SIGNUP_STATUSES, type SignupStatus } from "../statuses";
 
-type Props = { id: string; name: string; status: SignupStatus };
+type Props = { id: string; name: string; status: SignupStatus; hasRole: boolean };
 
 /** Status dropdown and two-step delete for one signup row. Renders two table cells. */
-export function SignupControls({ id, name, status }: Props) {
+export function SignupControls({ id, name, status, hasRole }: Props) {
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
+  const statuses = hasRole ? CAST_STATUSES : SIGNUP_STATUSES;
 
   return (
     <>
@@ -24,7 +25,7 @@ export function SignupControls({ id, name, status }: Props) {
             startTransition(() => setSignupStatus(id, next));
           }}
         >
-          {SIGNUP_STATUSES.map((s) => (
+          {statuses.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>

@@ -122,7 +122,7 @@ Sign in as an admin (`classified700@gmail.com`) for steps 1–6.
 3. **Cast:** on the dashboard, click **Cast** for a guest. Pick a role, change a field, add a storyline and save. The guest's status becomes `cast`, their codename shows on the dashboard, and a dossier link like `/agent/the-magpie-3f9a1c07be` appears.
 4. **Dossier:** open that link while signed out. It shows the guest's edited copy of the role; an unknown slug shows the themed 404.
 5. **No double casting:** cast a second guest. The role you just used is marked "(taken)" and can't be picked, and typing its codename by hand shows a warning and doesn't save.
-6. **Fix mistakes:** un-cast the first guest. They return to `enlisted` and their old dossier link now 404s. Recast them to a different role; it saves with a new link.
+6. **Fix mistakes:** on the dashboard, a guest with a role can only be switched between `cast` and `sent`; `enlisted` isn't offered. Un-cast the first guest from their cast page instead. They return to `enlisted` and their old dossier link now 404s. Recast them to a different role; it saves with a new link.
 7. **Non-admin:** sign out, then sign in with any other address. You see "CLEARANCE REVOKED" on `/admin`, `/admin/library` and every cast page, and no data.
 8. **Public enlistment:** submit the form at `/rsvp`. A new `enlisted` row appears on the dashboard.
 9. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` only finds server-only files.

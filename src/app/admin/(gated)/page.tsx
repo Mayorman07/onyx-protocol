@@ -76,7 +76,12 @@ export default async function AdminPage() {
                     {signup.codename ? "Recast" : "Cast"}
                   </Link>
                 </td>
-                <SignupControls id={signup.id} status={signup.status} name={signup.name} />
+                <SignupControls
+                  id={signup.id}
+                  status={signup.status}
+                  name={signup.name}
+                  hasRole={signup.codename !== null}
+                />
               </tr>
             ))}
           </tbody>

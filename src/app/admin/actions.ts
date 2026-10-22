@@ -17,7 +17,10 @@ export async function setSignupStatus(id: string, status: string) {
   if (!isSignupStatus(status)) return;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("signups").update({ status }).eq("id", id);
+  let query = supabase.from("signups").update({ status }).eq("id", id);
+  // A guest with a role only returns to enlisted via uncastSignup, which also clears the role and slug.
+  if (status === "enlisted") query = query.is("codename", null);
+  const { error } = await query;
   if (error) console.error("signup status update failed:", error.message);
   refresh();
 }
