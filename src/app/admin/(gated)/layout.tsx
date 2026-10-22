@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-session";
 import { signOut } from "../actions";
@@ -33,6 +34,10 @@ export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
 
   return (
     <main className="wide">
+      <nav className="admin-nav" aria-label="Admin">
+        <Link href="/admin">Signups</Link>
+        <Link href="/admin/library">Role library</Link>
+      </nav>
       {children}
       <SignOut email={session.email} />
     </main>

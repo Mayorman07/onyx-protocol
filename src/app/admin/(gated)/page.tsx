@@ -49,7 +49,7 @@ export default async function AdminPage() {
       {signups.length === 0 ? (
         <p>No agents have enlisted yet.</p>
       ) : (
-        <table className="signups">
+        <table className="ledger">
           <thead>
             <tr>
               <th>Name</th>

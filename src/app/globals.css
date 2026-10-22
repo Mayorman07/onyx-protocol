@@ -256,7 +256,17 @@ button:disabled {
   margin-bottom: 6px;
 }
 
-.field input {
+.field .optional {
+  color: var(--dim);
+  font-style: normal;
+  font-weight: normal;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.field input,
+.field textarea,
+.field select {
   width: 100%;
   font: inherit;
   color: var(--ink);
@@ -267,9 +277,30 @@ button:disabled {
   border-radius: 0;
 }
 
-.field input:focus {
+.field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
   outline: none;
   border-color: var(--lemon);
+}
+
+.notice {
+  border: 1px solid var(--lemon);
+  color: var(--lemon);
+  padding: 12px 14px;
+  margin: 18px 0 0;
+  letter-spacing: 0.08em;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px dashed var(--line);
+  margin: 28px 0 8px;
 }
 
 .alert {
@@ -286,6 +317,28 @@ main.wide {
   max-width: 960px;
 }
 
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  padding: 0 0 4px;
+  border-bottom: 1px dashed var(--line);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.admin-nav a {
+  color: var(--dim);
+  text-decoration: none;
+  padding: 6px 0;
+}
+
+.admin-nav a:hover,
+.admin-nav a:focus-visible {
+  color: var(--lemon);
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -295,14 +348,14 @@ main.wide {
   white-space: nowrap;
 }
 
-.signups {
+.ledger {
   width: 100%;
   border-collapse: collapse;
   margin-top: 18px;
   font-size: 0.9rem;
 }
 
-.signups th {
+.ledger th {
   text-align: left;
   color: var(--lemon);
   font-size: 0.75rem;
@@ -312,14 +365,14 @@ main.wide {
   border-bottom: 1px solid var(--line);
 }
 
-.signups td {
+.ledger td {
   padding: 10px 6px;
   border-bottom: 1px dashed var(--line);
   vertical-align: middle;
   overflow-wrap: anywhere;
 }
 
-.signups td.actions {
+.ledger td.actions {
   white-space: nowrap;
   text-align: right;
 }
@@ -339,7 +392,8 @@ main.wide {
   border-color: var(--lemon);
 }
 
-button.small {
+button.small,
+.btn.small {
   margin: 0 0 0 8px;
   padding: 6px 10px;
   font-size: 0.75rem;
@@ -355,19 +409,19 @@ button.danger:hover {
   color: #fff;
 }
 
-/* Narrow screens: each signup becomes a stacked card with inline labels. */
+/* Narrow screens: each table row becomes a stacked card with inline labels. */
 @media (max-width: 640px) {
-  .signups thead {
+  .ledger thead {
     display: none;
   }
 
-  .signups tr {
+  .ledger tr {
     display: block;
     padding: 12px 0;
     border-bottom: 1px dashed var(--line);
   }
 
-  .signups td {
+  .ledger td {
     display: flex;
     gap: 12px;
     align-items: center;
@@ -375,7 +429,7 @@ button.danger:hover {
     border: 0;
   }
 
-  .signups td[data-label]::before {
+  .ledger td[data-label]::before {
     content: attr(data-label);
     flex: 0 0 80px;
     color: var(--lemon);
@@ -384,12 +438,12 @@ button.danger:hover {
     text-transform: uppercase;
   }
 
-  .signups td.actions {
+  .ledger td.actions {
     justify-content: flex-start;
     padding-top: 8px;
   }
 
-  .signups td.actions button.small:first-child {
+  .ledger td.actions .small:first-child {
     margin-left: 0;
   }
 }
