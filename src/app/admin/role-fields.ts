@@ -13,9 +13,15 @@ export const ROLE_FIELDS = [
 export type RoleFieldName = (typeof ROLE_FIELDS)[number]["name"];
 export type Role = Record<RoleFieldName, string | null>;
 
-export const ROLE_COLUMNS = ROLE_FIELDS.map((f) => f.name).join(", ");
+// Literal (not built from ROLE_FIELDS) so Supabase's select-string parser can type the result. Keep in sync.
+export const ROLE_COLUMNS = "display_name, codename, archetype, cover_story, secret_motive, ally, rival, storyline";
 
 export const EMPTY_ROLE = Object.fromEntries(ROLE_FIELDS.map((f) => [f.name, null])) as Role;
+
+/** Copies just the role fields out of a larger row (a library role or a signup). */
+export function toRole(row: Role): Role {
+  return Object.fromEntries(ROLE_FIELDS.map((f) => [f.name, row[f.name]])) as Role;
+}
 
 const CODENAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SHORT_MAX = 120;

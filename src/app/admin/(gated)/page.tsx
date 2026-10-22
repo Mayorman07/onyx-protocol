@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getAdminSession } from "@/lib/admin-session";
 import { createClient } from "@/lib/supabase/server";
 import type { SignupStatus } from "../statuses";
@@ -12,6 +13,7 @@ type Signup = {
   email: string;
   status: SignupStatus;
   created_at: string;
+  codename: string | null;
 };
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-GB", {
@@ -29,7 +31,7 @@ export default async function AdminPage() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("signups")
-    .select("id, name, email, status, created_at")
+    .select("id, name, email, status, created_at, codename")
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(`Signups lookup failed: ${error.message}`);
@@ -55,6 +57,7 @@ export default async function AdminPage() {
               <th>Name</th>
               <th>Email</th>
               <th>Enlisted</th>
+              <th>Role</th>
               <th>Status</th>
               <th>
                 <span className="visually-hidden">Actions</span>
@@ -67,6 +70,12 @@ export default async function AdminPage() {
                 <td data-label="Name">{signup.name}</td>
                 <td data-label="Email">{signup.email}</td>
                 <td data-label="Enlisted">{DATE_FORMAT.format(new Date(signup.created_at))}</td>
+                <td data-label="Role">
+                  <span>{signup.codename ?? "—"}</span>
+                  <Link className="btn small" href={`/admin/cast/${signup.id}`}>
+                    {signup.codename ? "Recast" : "Cast"}
+                  </Link>
+                </td>
                 <SignupControls id={signup.id} status={signup.status} name={signup.name} />
               </tr>
             ))}
