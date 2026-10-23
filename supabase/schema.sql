@@ -19,7 +19,9 @@ create table signups (
   -- Unguessable public dossier URL key (codename + random hex), set on cast.
   slug text unique,
   -- When the dossier email was last sent. Null until sent.
-  sent_at timestamptz
+  sent_at timestamptz,
+  -- When the role fields last changed; stamped by the trigger in edit-tracking.sql.
+  role_edited_at timestamptz
 );
 
 -- A codename can belong to only one cast (or sent) guest at a time.
