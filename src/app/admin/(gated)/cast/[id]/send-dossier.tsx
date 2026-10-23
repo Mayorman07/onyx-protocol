@@ -9,11 +9,13 @@ type Props = {
   canSend: boolean;
   /** Server-formatted time of the last send, or null if never sent. */
   lastSent: string | null;
+  /** The role was edited after the last send, so the guest's email is out of date. */
+  editedSince: boolean;
 };
 
 const initialState: SendDossierState = {};
 
-export function SendDossier({ signupId, canSend, lastSent }: Props) {
+export function SendDossier({ signupId, canSend, lastSent, editedSince }: Props) {
   const [state, formAction, pending] = useActionState(sendDossier.bind(null, signupId), initialState);
   const [confirming, setConfirming] = useState(false);
   const alreadySent = lastSent !== null;
@@ -21,6 +23,12 @@ export function SendDossier({ signupId, canSend, lastSent }: Props) {
   return (
     <form action={formAction} onSubmit={() => setConfirming(false)}>
       {alreadySent && <p className="dim plain">Dossier last sent {lastSent}.</p>}
+      {editedSince && (
+        <p className="alert" role="status">
+          ⚠ This role was edited after the dossier was sent. The guest&apos;s email may be out of date; re-send if the
+          changes matter.
+        </p>
+      )}
       {!canSend && <p className="dim plain">Cast this guest before sending their dossier.</p>}
 
       {alreadySent && !confirming ? (

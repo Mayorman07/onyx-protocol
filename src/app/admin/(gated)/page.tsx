@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAdminSession } from "@/lib/admin-session";
 import { createClient } from "@/lib/supabase/server";
+import { editedSinceSent } from "../dossier-status";
 import { formatDateTime } from "../format";
 import type { SignupStatus } from "../statuses";
 import { SignupControls } from "./signup-controls";
@@ -16,19 +17,31 @@ type Signup = {
   created_at: string;
   codename: string | null;
   sent_at: string | null;
+  role_edited_at: string | null;
 };
 
 function DossierCell({ signup }: { signup: Signup }) {
   if (!signup.codename) return <td data-label="Dossier">—</td>;
+  if (!signup.sent_at) {
+    return (
+      <td data-label="Dossier">
+        <span className="stamp">Not sent</span>
+      </td>
+    );
+  }
   return (
     <td data-label="Dossier">
-      {signup.sent_at ? (
-        <span>
-          <b className="gold">Sent</b> {formatDateTime(signup.sent_at)}
-        </span>
-      ) : (
-        <span className="stamp">Not sent</span>
-      )}
+      <span>
+        <b className="gold">Sent</b> {formatDateTime(signup.sent_at)}
+        {editedSinceSent(signup.sent_at, signup.role_edited_at) && (
+          <>
+            {" "}
+            <span className="stamp" title="Role edited after this dossier was sent; consider re-sending">
+              ⚠ Edited since
+            </span>
+          </>
+        )}
+      </span>
     </td>
   );
 }
@@ -42,12 +55,13 @@ export default async function AdminPage() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("signups")
-    .select("id, name, email, status, created_at, codename, sent_at")
+    .select("id, name, email, status, created_at, codename, sent_at, role_edited_at")
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(`Signups lookup failed: ${error.message}`);
   const signups = (data ?? []) as Signup[];
   const awaitingDossier = signups.filter((s) => s.codename && !s.sent_at).length;
+  const staleDossiers = signups.filter((s) => s.codename && editedSinceSent(s.sent_at, s.role_edited_at)).length;
 
   return (
     <section className="step show">
@@ -59,6 +73,7 @@ export default async function AdminPage() {
       <p className="dim plain">
         {signups.length} {signups.length === 1 ? "signup" : "signups"}
         {awaitingDossier > 0 && ` · ${awaitingDossier} cast but not yet sent their dossier`}
+        {staleDossiers > 0 && ` · ${staleDossiers} edited since their dossier was sent`}
       </p>
 
       {signups.length === 0 ? (

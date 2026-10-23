@@ -7,6 +7,7 @@ import { ConfirmButton } from "../../../confirm-button";
 import { ROLE_COLUMNS, toRole, type Role } from "../../../role-fields";
 import type { SignupStatus } from "../../../statuses";
 import { uncastSignup } from "../actions";
+import { editedSinceSent } from "../../../dossier-status";
 import { formatDateTime } from "../../../format";
 import { CastForm, type LibraryRole } from "./cast-form";
 import { SendDossier } from "./send-dossier";
@@ -21,6 +22,7 @@ type CastSignup = Role & {
   status: SignupStatus;
   slug: string | null;
   sent_at: string | null;
+  role_edited_at: string | null;
 };
 
 export default async function CastPage({ params }: PageProps<"/admin/cast/[id]">) {
@@ -33,7 +35,7 @@ export default async function CastPage({ params }: PageProps<"/admin/cast/[id]">
   // Authenticated client throughout: RLS limits every query to admins.
   const supabase = await createClient();
   const [signupResult, libraryResult, takenResult] = await Promise.all([
-    supabase.from("signups").select(`id, name, email, status, slug, sent_at, ${ROLE_COLUMNS}`).eq("id", id).maybeSingle(),
+    supabase.from("signups").select(`id, name, email, status, slug, sent_at, role_edited_at, ${ROLE_COLUMNS}`).eq("id", id).maybeSingle(),
     supabase.from("dossiers").select(`id, ${ROLE_COLUMNS}`).order("display_name"),
     supabase.from("signups").select("codename").in("status", ["cast", "sent"]).neq("id", id),
   ]);
@@ -91,6 +93,7 @@ export default async function CastPage({ params }: PageProps<"/admin/cast/[id]">
         signupId={signup.id}
         canSend={isCast && signup.slug !== null}
         lastSent={signup.sent_at ? formatDateTime(signup.sent_at) : null}
+        editedSince={editedSinceSent(signup.sent_at, signup.role_edited_at)}
       />
       {isCast && (
         <ConfirmButton label="Un-cast guest" confirmLabel="Confirm un-cast" action={uncastSignup.bind(null, signup.id)} />
