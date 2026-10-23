@@ -49,8 +49,15 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 3. `supabase/admins.sql` — creates the `admins` allowlist (seeded with the two host emails), the `is_admin()` function and the admin-only RLS policies on `signups`.
 4. `supabase/casting.sql` — adds the admin-only RLS policies on `dossiers`, so the role library editor works.
 5. `supabase/sending.sql` — adds `signups.sent_at` (already in `schema.sql`, so on a new database this changes nothing).
+6. `supabase/edit-tracking.sql` — adds `signups.role_edited_at` and the trigger that stamps it whenever a guest's role fields change.
 
-`admins.sql`, `casting.sql` and `sending.sql` are safe to re-run.
+`admins.sql`, `casting.sql`, `sending.sql` and `edit-tracking.sql` are safe to re-run.
+
+### Upgrading for stale-dossier warnings (keeps all rows)
+
+**Run `supabase/edit-tracking.sql` in the SQL Editor before deploying this version.** The dashboard and cast page read `signups.role_edited_at`, so they fail until it exists. The script adds that column and a `before update` trigger on `signups`. The trigger sets `role_edited_at = now()` only when one of the role fields (`display_name`, `codename`, `archetype`, `cover_story`, `secret_motive`, `ally`, `rival`, `storyline`) actually changes, whether from the cast page or by hand in Supabase. Status and `sent_at` changes don't count, and neither does a save that changes nothing. Existing rows start with no value, so nothing is flagged until a role is next edited.
+
+If `role_edited_at` is later than `sent_at`, the guest's dossier email is out of date. The dashboard shows **⚠ Edited since** next to the send time, and the cast page shows a warning above the send button. Nothing is re-sent automatically; re-sending clears the flag.
 
 ### Upgrading for dossier emails (keeps all rows)
 
@@ -143,7 +150,8 @@ Sign in as an admin (`classified700@gmail.com`) for steps 1–6.
 9. **Email failure is non-fatal:** temporarily set `RESEND_API_KEY` to an invalid value and restart. Enlisting still shows MISSION ACCEPTED and adds the row; the server log shows `enlistment email failed`. Restore the key afterwards.
 10. **Send dossier:** cast a guest (use an address you can check), then click **Send dossier** on their cast page. You see "Dossier transmitted", and a "Your Cover Identity Has Been Assigned" email arrives from `agent@theonyxprotocol.xyz` with their display name and an **Open your dossier** button that opens their `/agent/[slug]` page. Their status becomes `sent`, and the dashboard's Dossier column shows the send time.
 11. **Re-send:** click **Re-send dossier**, then **Confirm re-send**. A second email arrives and the send time updates.
-12. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
+12. **Stale dossier:** after sending, change a field on the guest's cast page (e.g. the storyline) and save. The dashboard shows **⚠ Edited since** in the Dossier column, and the cast page shows the out-of-date warning. Saving again without changing anything doesn't set the flag. Re-send the dossier and the flag clears.
+13. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
 
 ## 4. Run it
 

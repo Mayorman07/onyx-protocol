@@ -28,7 +28,8 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - A codename may be held by only one `cast`/`sent` guest (app check + partial unique index `signups_cast_codename_key`). Un-cast clears the role and slug.
 - Role fields are defined once in `src/app/admin/role-fields.ts` (shared by the library editor and casting form).
 - `signups.sent_at` records the last dossier email; un-cast clears it.
-- SQL files, in run order: `schema.sql`, `seed.sql`, `admins.sql`, `casting.sql`, `sending.sql` (the last three are idempotent and upgrade older databases in place). Never instruct a drop-and-rebuild; the database has real data.
+- `signups.role_edited_at` is stamped by a DB trigger (`edit-tracking.sql`) whenever a role field actually changes. `role_edited_at > sent_at` means the sent dossier is stale; the admin UI flags it (`src/app/admin/dossier-status.ts`) but never auto-resends. Don't set `role_edited_at` from app code.
+- SQL files, in run order: `schema.sql`, `seed.sql`, `admins.sql`, `casting.sql`, `sending.sql`, `edit-tracking.sql` (all but the first two are idempotent and upgrade older databases in place). Never instruct a drop-and-rebuild; the database has real data.
 
 ## Email (Resend)
 - All sending goes through `src/lib/email.ts` (`import "server-only"`), which holds the Resend client and both templates. Never import it from a `"use client"` file.
