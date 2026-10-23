@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+import { sendEnlistmentConfirmation } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 export type RsvpState = { error?: string; outcome?: "enlisted" | "already-enlisted" };
@@ -30,7 +32,15 @@ export async function rsvp(_prev: RsvpState, formData: FormData): Promise<RsvpSt
     return { error: MESSAGES.failed };
   }
 
-  // TODO(resend): send enlistment confirmation email to {email}
+  // Best-effort and only for new signups: runs after the response, so a failed
+  // email never blocks or undoes the enlistment. The signups row is the source of truth.
+  after(async () => {
+    try {
+      await sendEnlistmentConfirmation(email);
+    } catch (err) {
+      console.error("enlistment email failed:", err instanceof Error ? err.message : err);
+    }
+  });
 
   return { outcome: "enlisted" };
 }
