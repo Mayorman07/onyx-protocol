@@ -12,13 +12,13 @@ Built with Next.js (App Router, TypeScript) and Supabase.
 
 ## How it works
 
-1. **Enlistment.** A guest submits their name and email at `/rsvp`. A server action adds them to `signups` with status `enlisted`, and the page shows a "MISSION ACCEPTED" confirmation.
+1. **Enlistment.** A guest submits their name and email at `/rsvp`. A server action adds them to `signups` with status `enlisted`, the page shows a "MISSION ACCEPTED" confirmation, and a confirmation email goes out from `handler@theonyxprotocol.xyz`. The email is best-effort: it's sent after the response, so if it fails the enlistment still stands (the failure is logged on the server). Someone who's already enlisted doesn't get a second email.
 2. **Role library.** `dossiers` is the hosts' pool of role templates (the 12 seeded agents to start with). The hosts add, edit and delete roles at `/admin/library`.
 3. **Casting.** From the dashboard, a host opens a guest's **Cast** page, picks a library role and edits the guest's copy (including a storyline written for them). Saving writes the role onto the guest's `signups` row, sets their status to `cast` and gives them an unguessable dossier URL (`/agent/<codename>-<random hex>`).
    - **Copy-on-cast:** the guest gets their own copy, so later edits to the library, or deleting the role, never change a guest who is already cast.
    - **No double casting:** a codename can belong to only one cast or sent guest at a time. The app shows a warning, and a database index enforces it.
    - **Fixing mistakes:** a guest can be recast to a different role (which frees their old codename and issues a new URL) or un-cast back to `enlisted` (which clears their role and retires their URL).
-4. **Sending (next checkpoint).** A **Send dossier** button is shown on the cast page but is disabled until email sending (Resend) is built.
+4. **Sending.** On a cast guest's page, **Send dossier** emails them a teaser from `agent@theonyxprotocol.xyz`: their display name and an **Open your dossier** button linking to their `/agent/[slug]` page. The cover story, motive, ally, rival and storyline are only on the dossier page, never in the email. A successful send sets the guest's status to `sent` and records `sent_at`. Re-sending asks for confirmation and updates `sent_at`. The dashboard's **Dossier** column shows who has been sent theirs and when.
 
 ## 1. Environment variables
 
@@ -29,8 +29,14 @@ Copy `.env.example` to `.env.local` and fill in the values from your Supabase pr
 | `NEXT_PUBLIC_SUPABASE_URL` | Project URL. Safe to expose. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key. Safe to expose. Used for admin sign-in and for every admin read and write (signups, casting, role library), which run as the signed-in user so RLS decides what they can do. On its own (signed out) it can't read or write any table. |
 | `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Bypasses row level security. Used only on the server (`src/lib/supabase-admin.ts`) for the public enlistment insert and the public dossier page, never for admin actions. Never give it a `NEXT_PUBLIC_` prefix. |
+| `RESEND_API_KEY` | **Secret.** Resend API key for `theonyxprotocol.xyz`. Used only on the server (`src/lib/email.ts`). Never give it a `NEXT_PUBLIC_` prefix. |
+| `EMAIL_FROM_HANDLER` | Sender for enlistment confirmations: `"The Handler <handler@theonyxprotocol.xyz>"`. |
+| `EMAIL_FROM_AGENT` | Sender for dossier emails: `"The Onyx Protocol <agent@theonyxprotocol.xyz>"`. |
+| `NEXT_PUBLIC_SITE_URL` | Base URL used to build dossier links in emails: `https://onyx-protocol-gamma.vercel.app` (change it if you move to a custom domain). |
 
-`.env.local` is git-ignored. On Vercel, add the same three variables under **Project Settings → Environment Variables**.
+`.env.local` is git-ignored. On Vercel, add the same variables under **Project Settings → Environment Variables**.
+
+**Emails won't send until you add `RESEND_API_KEY`, `EMAIL_FROM_HANDLER`, `EMAIL_FROM_AGENT` and `NEXT_PUBLIC_SITE_URL` to both `.env.local` and Vercel** (then restart `npm run dev` / redeploy). Until then, enlistment still works but no confirmation email goes out, and **Send dossier** shows an error.
 
 ## 2. Database
 
@@ -42,8 +48,17 @@ In the Supabase dashboard, open **SQL Editor** and run, in order:
 2. `supabase/seed.sql` — inserts 12 starter roles into `dossiers`.
 3. `supabase/admins.sql` — creates the `admins` allowlist (seeded with the two host emails), the `is_admin()` function and the admin-only RLS policies on `signups`.
 4. `supabase/casting.sql` — adds the admin-only RLS policies on `dossiers`, so the role library editor works.
+5. `supabase/sending.sql` — adds `signups.sent_at` (already in `schema.sql`, so on a new database this changes nothing).
 
-`admins.sql` and `casting.sql` are safe to re-run.
+`admins.sql`, `casting.sql` and `sending.sql` are safe to re-run.
+
+### Upgrading for dossier emails (keeps all rows)
+
+**Run `supabase/sending.sql` in the SQL Editor before deploying this version.** The dashboard and cast page read `signups.sent_at`, so they fail until it exists. It runs one statement:
+
+```sql
+alter table signups add column if not exists sent_at timestamptz;
+```
 
 ### Upgrading an existing database (keeps all rows)
 
@@ -124,8 +139,11 @@ Sign in as an admin (`classified700@gmail.com`) for steps 1–6.
 5. **No double casting:** cast a second guest. The role you just used is marked "(taken)" and can't be picked, and typing its codename by hand shows a warning and doesn't save.
 6. **Fix mistakes:** on the dashboard, a guest with a role can only be switched between `cast` and `sent`; `enlisted` isn't offered. Un-cast the first guest from their cast page instead. They return to `enlisted` and their old dossier link now 404s. Recast them to a different role; it saves with a new link.
 7. **Non-admin:** sign out, then sign in with any other address. You see "CLEARANCE REVOKED" on `/admin`, `/admin/library` and every cast page, and no data.
-8. **Public enlistment:** submit the form at `/rsvp`. A new `enlisted` row appears on the dashboard.
-9. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` only finds server-only files.
+8. **Public enlistment:** submit the form at `/rsvp` with a new email. You see MISSION ACCEPTED, a new `enlisted` row appears on the dashboard, and a "Mission Accepted — Await Further Instructions" email arrives from `handler@theonyxprotocol.xyz`. Submitting the same email again shows "already enlisted" and sends no second email.
+9. **Email failure is non-fatal:** temporarily set `RESEND_API_KEY` to an invalid value and restart. Enlisting still shows MISSION ACCEPTED and adds the row; the server log shows `enlistment email failed`. Restore the key afterwards.
+10. **Send dossier:** cast a guest (use an address you can check), then click **Send dossier** on their cast page. You see "Dossier transmitted", and a "Your Cover Identity Has Been Assigned" email arrives from `agent@theonyxprotocol.xyz` with their display name and an **Open your dossier** button that opens their `/agent/[slug]` page. Their status becomes `sent`, and the dashboard's Dossier column shows the send time.
+11. **Re-send:** click **Re-send dossier**, then **Confirm re-send**. A second email arrives and the send time updates.
+12. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
 
 ## 4. Run it
 

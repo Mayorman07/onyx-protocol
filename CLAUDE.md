@@ -27,19 +27,28 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - `dossiers` — the editable role library (templates only), no fixed size; never hard-code the role count. Its `assigned_to_email`/`slug`/`sent_at` columns are legacy and unused.
 - A codename may be held by only one `cast`/`sent` guest (app check + partial unique index `signups_cast_codename_key`). Un-cast clears the role and slug.
 - Role fields are defined once in `src/app/admin/role-fields.ts` (shared by the library editor and casting form).
-- SQL files, in run order: `schema.sql`, `seed.sql`, `admins.sql`, `casting.sql` (the last two are idempotent; `casting.sql` also upgrades older databases in place). Never instruct a drop-and-rebuild; the database has real data.
-- Next checkpoint: "Send dossier" email via Resend — see `TODO(resend)` stubs.
+- `signups.sent_at` records the last dossier email; un-cast clears it.
+- SQL files, in run order: `schema.sql`, `seed.sql`, `admins.sql`, `casting.sql`, `sending.sql` (the last three are idempotent and upgrade older databases in place). Never instruct a drop-and-rebuild; the database has real data.
+
+## Email (Resend)
+- All sending goes through `src/lib/email.ts` (`import "server-only"`), which holds the Resend client and both templates. Never import it from a `"use client"` file.
+- Enlistment confirmation: sent from the `/rsvp` action via `after()`, only for new signups, best-effort (a failure is logged, never shown or rolled back).
+- Dossier email: admin-only `sendDossier` action (authenticated client, so RLS applies). It's a teaser only — display name + link to `${NEXT_PUBLIC_SITE_URL}/agent/${slug}`; never put cover story, motive, ally, rival or storyline in an email. On success it sets `status = 'sent'` and `sent_at`.
 
 ## Environment variables (in `.env.local`, never committed)
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
+- `RESEND_API_KEY` (secret, server-only)
+- `EMAIL_FROM_HANDLER`, `EMAIL_FROM_AGENT` (sender identities)
+- `NEXT_PUBLIC_SITE_URL` (base URL for dossier links in emails)
 
 ## 🔒 Security rule — highest priority
 `SUPABASE_SERVICE_ROLE_KEY` is a master key that bypasses all database security.
 - It must **never** carry the `NEXT_PUBLIC_` prefix.
 - It must **only** be imported inside Server Actions / server components — never in any file marked `"use client"`.
 - Before finishing any task that touches Supabase, search the codebase for `SERVICE_ROLE` and confirm every hit is in server-only code.
+- The same rules apply to `RESEND_API_KEY`: no `NEXT_PUBLIC_` prefix, only read in `src/lib/email.ts`. Search for it before finishing any email task.
 - The service-role client (`src/lib/supabase-admin.ts`) is for the public enlistment insert and the public `/agent/[slug]` read only. **All admin reads/writes use the signed-in user's client** (`src/lib/supabase/server.ts`, anon key + session cookies) so RLS enforces the allowlist. Never route admin data through the service role.
 - Session refresh lives in `src/proxy.ts` (Next 16's replacement for `middleware.ts`), scoped to `/admin` and `/auth`.
 
