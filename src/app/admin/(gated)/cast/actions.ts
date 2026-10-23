@@ -2,6 +2,7 @@
 
 import { randomBytes } from "node:crypto";
 import { refresh } from "next/cache";
+import { sendDossierEmail } from "@/lib/email";
 import { createClient } from "@/lib/supabase/server";
 import { isUuid } from "@/lib/uuid";
 import { EMPTY_ROLE, parseRole } from "../../role-fields";
@@ -73,8 +74,55 @@ export async function uncastSignup(id: string) {
   const supabase = await createClient();
   const { error } = await supabase
     .from("signups")
-    .update({ ...EMPTY_ROLE, slug: null, status: "enlisted" })
+    .update({ ...EMPTY_ROLE, slug: null, sent_at: null, status: "enlisted" })
     .eq("id", id);
   if (error) console.error("uncast failed:", error.message);
   refresh();
+}
+
+export type SendDossierState = { error?: string; sent?: boolean };
+
+type SendableGuest = {
+  email: string;
+  display_name: string | null;
+  codename: string | null;
+  slug: string | null;
+  status: string;
+};
+
+/** Emails a cast guest their dossier teaser, then marks them sent. Re-sending updates sent_at. */
+export async function sendDossier(id: string): Promise<SendDossierState> {
+  if (!isUuid(id)) return { error: "Unknown guest." };
+
+  // RLS: a non-admin reads no row here, so nothing is ever sent on their behalf.
+  const supabase = await createClient();
+  const { data: guest } = await supabase
+    .from("signups")
+    .select("email, display_name, codename, slug, status")
+    .eq("id", id)
+    .maybeSingle<SendableGuest>();
+
+  if (!guest) return { error: "Unknown guest." };
+  if (guest.status === "enlisted" || !guest.codename || !guest.slug) {
+    return { error: "Cast this guest before sending their dossier, agent." };
+  }
+
+  try {
+    await sendDossierEmail({ to: guest.email, displayName: guest.display_name ?? guest.codename, slug: guest.slug });
+  } catch (err) {
+    console.error("dossier email failed:", err instanceof Error ? err.message : err);
+    return { error: "Transmission failed. The dossier email was not sent." };
+  }
+
+  const { error } = await supabase
+    .from("signups")
+    .update({ status: "sent", sent_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) {
+    console.error("recording dossier send failed:", error.message);
+    return { error: "The dossier was emailed, but recording it failed. Refresh before re-sending." };
+  }
+
+  refresh();
+  return { sent: true };
 }

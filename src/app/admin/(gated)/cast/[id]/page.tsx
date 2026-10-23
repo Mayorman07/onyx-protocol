@@ -7,12 +7,21 @@ import { ConfirmButton } from "../../../confirm-button";
 import { ROLE_COLUMNS, toRole, type Role } from "../../../role-fields";
 import type { SignupStatus } from "../../../statuses";
 import { uncastSignup } from "../actions";
+import { formatDateTime } from "../../../format";
 import { CastForm, type LibraryRole } from "./cast-form";
+import { SendDossier } from "./send-dossier";
 
 // Reads the session cookie, so render on request.
 export const instant = false;
 
-type CastSignup = Role & { id: string; name: string; email: string; status: SignupStatus; slug: string | null };
+type CastSignup = Role & {
+  id: string;
+  name: string;
+  email: string;
+  status: SignupStatus;
+  slug: string | null;
+  sent_at: string | null;
+};
 
 export default async function CastPage({ params }: PageProps<"/admin/cast/[id]">) {
   const session = await getAdminSession();
@@ -24,7 +33,7 @@ export default async function CastPage({ params }: PageProps<"/admin/cast/[id]">
   // Authenticated client throughout: RLS limits every query to admins.
   const supabase = await createClient();
   const [signupResult, libraryResult, takenResult] = await Promise.all([
-    supabase.from("signups").select(`id, name, email, status, slug, ${ROLE_COLUMNS}`).eq("id", id).maybeSingle(),
+    supabase.from("signups").select(`id, name, email, status, slug, sent_at, ${ROLE_COLUMNS}`).eq("id", id).maybeSingle(),
     supabase.from("dossiers").select(`id, ${ROLE_COLUMNS}`).order("display_name"),
     supabase.from("signups").select("codename").in("status", ["cast", "sent"]).neq("id", id),
   ]);
@@ -78,10 +87,11 @@ export default async function CastPage({ params }: PageProps<"/admin/cast/[id]">
       />
 
       <hr className="divider" />
-      {/* TODO(resend): send dossier email — this button will email the guest their /agent/[slug] link. */}
-      <button type="button" disabled title="Coming next: email sending">
-        Send dossier (coming next)
-      </button>
+      <SendDossier
+        signupId={signup.id}
+        canSend={isCast && signup.slug !== null}
+        lastSent={signup.sent_at ? formatDateTime(signup.sent_at) : null}
+      />
       {isCast && (
         <ConfirmButton label="Un-cast guest" confirmLabel="Confirm un-cast" action={uncastSignup.bind(null, signup.id)} />
       )}
