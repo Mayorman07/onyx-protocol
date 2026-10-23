@@ -17,7 +17,9 @@ create table signups (
   rival text,
   storyline text,
   -- Unguessable public dossier URL key (codename + random hex), set on cast.
-  slug text unique
+  slug text unique,
+  -- When the dossier email was last sent. Null until sent.
+  sent_at timestamptz
 );
 
 -- A codename can belong to only one cast (or sent) guest at a time.
