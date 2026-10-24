@@ -178,7 +178,7 @@ Both looks share the same markup; only CSS colour tokens change (`:root` vs `:ro
 
 On phones it collapses to a single column. Decoration stays in the frame and margins and never covers the role text; redaction is only used on the decorative handler line.
 
-The file number and threat-assessment bars are **decorative and generated from the codename** (a stable hash, 2–5 bars out of 5 per trait), so the same agent always shows the same values. Nothing is entered or stored, and the bars aren't real data.
+The file number and threat-assessment bars are **decorative and generated from the codename**, so the same agent always shows the same values. Nothing is entered or stored, and the bars aren't real data. Each agent gets a characterful mix on a 1–5 scale: at most one trait at 5/5, at least one low trait (1 or 2), and no more than one repeated value. The codename picks the profile shape and which trait leads, so different agents read differently.
 
 **The admin area is never themed:** it has no toggle and no chrome, and the `<head>` script skips `/admin` and `/auth` URLs, so it always stays dark. Emails are unaffected, since they carry their own inline styles.
 
