@@ -8,6 +8,13 @@
   --grey: #9aa09c;
   --red: #c0392b;
   --line: #2b2f2e;
+  --redact: #9aa09c;
+  --on-accent: #0c0d0d;
+  --on-red: #fff;
+  --red-glow: rgba(192, 57, 43, 0.2);
+  --panel-edge: 3px solid var(--lemon);
+  --panel-shadow: none;
+  --texture: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -28,7 +35,7 @@ body {
   color: var(--ink);
   font-family: "Courier New", ui-monospace, Menlo, monospace;
   line-height: 1.6;
-  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
+  background-image: var(--texture);
 }
 
 main {
@@ -42,8 +49,9 @@ main {
 .step {
   display: none;
   border: 1px solid var(--line);
-  border-top: 3px solid var(--lemon);
+  border-top: var(--panel-edge);
   background: var(--panel);
+  box-shadow: var(--panel-shadow);
   padding: 26px 22px;
   margin: 22px 0;
 }
@@ -169,7 +177,7 @@ button,
 button:hover,
 .btn:hover {
   background: var(--lemon);
-  color: #0c0d0d;
+  color: var(--on-accent);
 }
 
 button:disabled {
@@ -180,7 +188,7 @@ button:disabled {
 .btn.big {
   background: var(--red);
   border-color: var(--red);
-  color: #fff;
+  color: var(--on-red);
   font-weight: bold;
   animation: pulse 2s infinite;
 }
@@ -188,12 +196,12 @@ button:disabled {
 .btn.big:hover {
   background: var(--lemon);
   border-color: var(--lemon);
-  color: #0c0d0d;
+  color: var(--on-accent);
 }
 
 @keyframes pulse {
   50% {
-    box-shadow: 0 0 0 8px rgba(192, 57, 43, 0.2);
+    box-shadow: 0 0 0 8px var(--red-glow);
   }
 }
 
@@ -226,8 +234,8 @@ button:disabled {
 }
 
 .redact {
-  background: var(--grey);
-  color: var(--grey);
+  background: var(--redact);
+  color: var(--redact);
   padding: 0 6px;
   cursor: pointer;
   user-select: none;
@@ -406,7 +414,7 @@ button.danger {
 
 button.danger:hover {
   background: var(--red);
-  color: #fff;
+  color: var(--on-red);
 }
 
 /* Narrow screens: each table row becomes a stacked card with inline labels. */
