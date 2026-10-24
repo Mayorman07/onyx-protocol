@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "./theme";
 
 export const metadata: Metadata = {
   title: "The Onyx Protocol — Classified",
@@ -15,8 +16,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // suppressHydrationWarning: browser extensions (Grammarly etc.) add attributes to <html>/<body> before React hydrates.
+    // suppressHydrationWarning: the theme script sets data-theme on <html>, and browser extensions
+    // (Grammarly etc.) add attributes to <html>/<body>, before React hydrates.
     <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );

@@ -15,9 +15,36 @@
   --panel-edge: 3px solid var(--lemon);
   --panel-shadow: none;
   --texture: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
+  /* Ink-speckle mask for worn rubber stamps (declassified only). */
+  --stamp-wear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 2.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/*
+ * DECLASSIFIED: aged manila dossier. Same markup, different tokens.
+ * Only ever set on guest pages (see src/app/theme.ts); admin never gets this attribute.
+ */
+:root[data-theme="declassified"] {
+  --bg: #e7e0cd;
+  --panel: #f3eddc;
+  --ink: #1c1813;
+  --dim: #5f5647;
+  --gold: #7a5c2b;
+  --lemon: #6e4c16;
+  --grey: #8c836f;
+  --red: #9b2d20;
+  --line: #cfc4a8;
+  --redact: #1c1813;
+  --on-accent: #f3eddc;
+  --on-red: #f7f1e3;
+  --red-glow: rgba(155, 45, 32, 0.18);
+  --panel-edge: 3px double #a8966c;
+  --panel-shadow: 0 1px 1px rgba(60, 42, 14, 0.08), 0 12px 28px -14px rgba(60, 42, 14, 0.4);
+  /* Fine paper grain: inline SVG fractal noise tinted sepia, no external image. */
+  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .26 0 0 0 0 .11 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color-scheme: light;
 }
 
 * {
@@ -39,9 +66,35 @@ body {
 }
 
 main {
+  position: relative;
+  z-index: 1;
   max-width: 640px;
   margin: 0 auto;
   padding: 24px 20px 80px;
+}
+
+/* Switching themes eases between palettes rather than snapping. */
+body,
+.step,
+.tag {
+  transition:
+    background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease;
+}
+
+/* Declassified extras: a soft vignette like an old file under a desk lamp, and grain on the paper cards. */
+:root[data-theme="declassified"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 35%, transparent 55%, rgba(92, 64, 20, 0.2) 100%);
+}
+
+:root[data-theme="declassified"] .step {
+  background-image: var(--texture);
 }
 
 /* Panels */
@@ -81,6 +134,75 @@ main {
   font-weight: bold;
   transform: rotate(-2deg);
   font-size: 0.8rem;
+}
+
+/* Declassified: a worn rubber stamp. Double outline, uneven tilt, ink speckle from a noise mask. */
+:root[data-theme="declassified"] .tag {
+  border: 3px double var(--red);
+  border-radius: 4px;
+  padding: 3px 12px;
+  transform: rotate(-4deg) skewX(-3deg);
+  opacity: 0.9;
+  mix-blend-mode: multiply;
+  -webkit-mask-image: var(--stamp-wear);
+  mask-image: var(--stamp-wear);
+}
+
+/* Guest page header: holds the theme stamp, top-right. */
+.doc-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 14px 20px 0;
+}
+
+.theme-stamp {
+  margin: 0;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 0.22em;
+  color: var(--red);
+  background: transparent;
+  border: 2px solid var(--red);
+  border-radius: 3px;
+  transform: rotate(-3deg);
+}
+
+.theme-stamp:hover,
+.theme-stamp:focus-visible {
+  background: transparent;
+  color: var(--red);
+  transform: rotate(-3deg) scale(1.05);
+}
+
+:root[data-theme="declassified"] .theme-stamp {
+  border-style: double;
+  border-width: 3px;
+  mix-blend-mode: multiply;
+}
+
+.theme-stamp-ink {
+  display: inline-block;
+  animation: stamp-press 0.35s ease-out;
+}
+
+@keyframes stamp-press {
+  0% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(0.94);
+    opacity: 1;
+  }
+  100% {
+    transform: none;
+  }
 }
 
 /* Type */
@@ -459,6 +581,7 @@ button.danger:hover {
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;
+    transition: none !important;
     scroll-behavior: auto !important;
   }
 }
