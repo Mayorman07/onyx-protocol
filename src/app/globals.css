@@ -15,7 +15,7 @@
   --panel-edge: 3px solid var(--lemon);
   --panel-shadow: none;
   --texture: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 3px);
-  /* Ink-speckle mask for worn rubber stamps (declassified only). */
+  /* Ink-speckle mask for worn rubber stamps (daylight only). */
   --stamp-wear: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 2.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top, 0px);
@@ -23,10 +23,10 @@
 }
 
 /*
- * DECLASSIFIED: aged manila dossier. Same markup, different tokens.
+ * DAYLIGHT: the same classified file on aged paper. Same markup, different tokens.
  * Only ever set on guest pages (see src/app/theme.ts); admin never gets this attribute.
  */
-:root[data-theme="declassified"] {
+:root[data-theme="daylight"] {
   --bg: #e7e0cd;
   --panel: #f3eddc;
   --ink: #1c1813;
@@ -83,8 +83,8 @@ body,
     border-color 0.4s ease;
 }
 
-/* Declassified extras: a soft vignette like an old file under a desk lamp, and grain on the paper cards. */
-:root[data-theme="declassified"] body::before {
+/* Daylight extras: a soft vignette like an old file under a desk lamp, and grain on the paper cards. */
+:root[data-theme="daylight"] body::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -93,12 +93,12 @@ body,
   background: radial-gradient(ellipse at 50% 35%, transparent 55%, rgba(92, 64, 20, 0.2) 100%);
 }
 
-:root[data-theme="declassified"] .step {
+:root[data-theme="daylight"] .step {
   background-image: var(--texture);
 }
 
 /* Bronze heading with a black-ink accent; the dark theme's lemon accent is too close to bronze on paper. */
-:root[data-theme="declassified"] h2 span {
+:root[data-theme="daylight"] h2 span {
   color: var(--ink);
 }
 
@@ -141,8 +141,8 @@ body,
   font-size: 0.8rem;
 }
 
-/* Declassified: a worn rubber stamp. Double outline, uneven tilt, ink speckle from a noise mask. */
-:root[data-theme="declassified"] .tag {
+/* Daylight: a worn rubber stamp. Double outline, uneven tilt, ink speckle from a noise mask. */
+:root[data-theme="daylight"] .tag {
   border: 3px double var(--red);
   border-radius: 4px;
   padding: 3px 12px;
@@ -277,7 +277,7 @@ body,
   transform: rotate(-3deg) scale(1.05);
 }
 
-:root[data-theme="declassified"] .theme-stamp {
+:root[data-theme="daylight"] .theme-stamp {
   border-style: double;
   border-width: 3px;
   mix-blend-mode: multiply;
@@ -542,7 +542,7 @@ button:disabled {
   white-space: nowrap;
 }
 
-:root[data-theme="declassified"] .case-stamp {
+:root[data-theme="daylight"] .case-stamp {
   border: 3px double var(--red);
   mix-blend-mode: multiply;
   -webkit-mask-image: var(--stamp-wear);

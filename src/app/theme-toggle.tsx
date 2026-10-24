@@ -10,18 +10,18 @@ function subscribe(onChange: () => void) {
 }
 
 function currentTheme(): Theme {
-  return document.documentElement.dataset.theme === "declassified" ? "declassified" : "classified";
+  return document.documentElement.dataset.theme === "daylight" ? "daylight" : "covert";
 }
 
-// The server always renders CLASSIFIED; the client then reads what the <head> script applied.
+// The server always renders COVERT; the client then reads what the <head> script applied.
 function serverTheme(): Theme {
-  return "classified";
+  return "covert";
 }
 
-/** Rubber-stamp switch between CLASSIFIED (dark) and DECLASSIFIED (manila). Guest pages only. */
+/** Rubber-stamp switch between COVERT (dark) and DAYLIGHT (paper). Guest pages only. */
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, currentTheme, serverTheme);
-  const next: Theme = theme === "classified" ? "declassified" : "classified";
+  const next: Theme = theme === "covert" ? "daylight" : "covert";
 
   function toggle() {
     document.documentElement.dataset.theme = next;
@@ -37,8 +37,8 @@ export function ThemeToggle() {
       type="button"
       className="theme-stamp"
       onClick={toggle}
-      aria-label={`Document is ${theme}. Switch to ${next}.`}
-      title={`Switch to ${next}`}
+      aria-label={`${theme} view. Switch to ${next} view.`}
+      title={`Switch to ${next} view`}
     >
       {/* Keyed so the stamp "presses" again on each switch. */}
       <span key={theme} className="theme-stamp-ink">
