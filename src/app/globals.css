@@ -473,127 +473,260 @@ button:disabled {
   color: var(--red);
 }
 
-/* Dossier: case file */
+/* Dossier: PERSONAL FILE. Decoration stays in the frame and margins, never over role text. */
 
-.case-file {
-  position: relative;
-  overflow: hidden;
-}
-
-.case-file > * {
-  position: relative;
-  z-index: 1;
-}
-
-.case-file .fingerprint {
-  position: absolute;
-  z-index: 0;
-  top: -16px;
-  right: -26px;
-  width: 150px;
-  color: var(--ink);
-  opacity: 0.07;
-  pointer-events: none;
-}
-
-.case-head {
+.pf-band {
   display: flex;
-  gap: 18px;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px 18px;
+  padding-bottom: 16px;
+  border-bottom: 3px double var(--line);
 }
 
-.subject-photo {
-  position: relative;
-  flex: 0 0 92px;
+.pf-band-text {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.pf-label {
   margin: 0;
 }
 
-.subject-frame {
+.pf-label b {
+  display: block;
+  color: var(--gold);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.pf-label span {
+  color: var(--dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* The corner stamp is its own flex item, so it takes margin space instead of sitting on text. */
+.pf-stamp {
+  flex: none;
+  padding: 4px 12px;
+  border: 3px double var(--red);
+  border-radius: 3px;
+  color: var(--red);
+  font-size: 0.85rem;
+  font-weight: bold;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transform: rotate(7deg);
+}
+
+.pf-top {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 24px;
+  margin: 24px 0 8px;
+}
+
+.pf-photo {
+  margin: 0;
+}
+
+.pf-frame {
+  position: relative;
   display: grid;
   place-items: end center;
   aspect-ratio: 4 / 5;
   overflow: hidden;
   border: 1px solid var(--line);
+  outline: 1px solid var(--line);
+  outline-offset: 4px;
   background: color-mix(in srgb, var(--ink) 6%, transparent);
 }
 
-.subject-frame svg {
-  width: 82%;
+.pf-silhouette {
+  width: 80%;
   color: var(--dim);
-  opacity: 0.55;
+  opacity: 0.5;
 }
 
-.subject-photo figcaption {
-  margin-top: 6px;
+.pf-fingerprint {
+  position: absolute;
+  right: -14px;
+  bottom: -18px;
+  width: 78px;
+  color: var(--ink);
+  opacity: 0.1;
+}
+
+.pf-withheld {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  padding: 2px 10px;
+  border: 2px solid var(--red);
+  color: var(--red);
+  background: color-mix(in srgb, var(--panel) 72%, transparent);
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+
+.pf-photo figcaption {
+  margin-top: 12px;
   color: var(--dim);
-  font-size: 0.56rem;
-  line-height: 1.4;
+  font-size: 0.6rem;
   letter-spacing: 0.16em;
   text-align: center;
   text-transform: uppercase;
 }
 
-.case-stamp {
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(-14deg);
-  padding: 1px 6px;
-  border: 2px solid var(--red);
-  color: var(--red);
-  background: color-mix(in srgb, var(--panel) 70%, transparent);
-  font-size: 0.6rem;
-  font-weight: bold;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  white-space: nowrap;
+.pf-data {
+  min-width: 0;
 }
 
-:root[data-theme="daylight"] .case-stamp {
-  border: 3px double var(--red);
+.pf-key {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* Codenames are hyphenated slugs (the-cartographer), so long ones break cleanly at the hyphen. */
+.pf-codename {
+  margin: 2px 0 14px;
+  font-size: clamp(1.45rem, 5.6vw, 2.2rem);
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+}
+
+.pf-meta {
+  margin: 0;
+  border-top: 1px dashed var(--line);
+}
+
+.pf-meta div {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pf-meta dt {
+  padding-top: 0.2em;
+  color: var(--lemon);
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.pf-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Flavour-only redaction: a solid ink bar, used just for decorative lines. */
+.redact-bar {
+  display: inline-block;
+  width: 9em;
+  max-width: 100%;
+  height: 0.95em;
+  vertical-align: middle;
+  background: var(--redact);
+}
+
+.pf-body {
+  margin-top: 8px;
+}
+
+.pf-section {
+  padding: 16px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pf-heading {
+  margin: 0 0 6px;
+  color: var(--red);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: bold;
+  letter-spacing: 0.24em;
+}
+
+.pf-section p {
+  margin: 0;
+}
+
+.pf-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 24px;
+}
+
+.pf-sign-off {
+  margin: 22px 0 0;
+}
+
+.pf-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px 20px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 3px double var(--line);
+}
+
+.pf-foot-text {
+  display: grid;
+  justify-items: end;
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.66rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+:root[data-theme="daylight"] .pf-stamp,
+:root[data-theme="daylight"] .pf-withheld {
   mix-blend-mode: multiply;
   -webkit-mask-image: var(--stamp-wear);
   mask-image: var(--stamp-wear);
 }
 
-.case-meta {
-  min-width: 0;
-}
+/* Phones: one clean column, photo centred above the data. */
+@media (max-width: 560px) {
+  .pf-top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
 
-.case-meta .dim {
-  margin: 10px 0 6px;
-}
+  .pf-photo {
+    justify-self: center;
+    width: min(180px, 60%);
+  }
 
-.case-ref {
-  margin: 2px 0 0;
-  color: var(--dim);
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  overflow-wrap: anywhere;
-}
+  .pf-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
 
-.case-ref b {
-  color: var(--lemon);
-}
-
-/* Sized so the longest seeded name ("THE CARTOGRAPHER") fits a phone; longer custom names hyphenate. */
-.case-name {
-  margin: 0.55em 0 0.3em;
-  font-size: clamp(1.5rem, 6.6vw, 3rem);
-  letter-spacing: 0.03em;
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-
-.case-foot {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 22px;
-}
-
-.case-sign-off {
-  margin-top: 18px;
+  .pf-foot-text {
+    justify-items: start;
+  }
 }
 
 /* Forms */

@@ -1,4 +1,5 @@
 import { Barcode } from "../../../barcode";
+import { fileNumber } from "./file-codes";
 
 // A cast guest's own copy of their role, stored on their signup row.
 export type Dossier = {
@@ -14,7 +15,7 @@ export type Dossier = {
 
 function Silhouette() {
   return (
-    <svg viewBox="0 0 80 100" aria-hidden="true">
+    <svg className="pf-silhouette" viewBox="0 0 80 100" aria-hidden="true">
       <circle cx="40" cy="36" r="17" fill="currentColor" />
       <path d="M8 100c0-25 14-36 32-36s32 11 32 36z" fill="currentColor" />
     </svg>
@@ -25,7 +26,7 @@ function Silhouette() {
 function Fingerprint() {
   const ridges = Array.from({ length: 9 }, (_, i) => i);
   return (
-    <svg className="fingerprint" viewBox="0 0 120 150" aria-hidden="true">
+    <svg className="pf-fingerprint" viewBox="0 0 120 150" aria-hidden="true">
       {ridges.map((i) => (
         <ellipse
           key={i}
@@ -43,65 +44,109 @@ function Fingerprint() {
   );
 }
 
-/** The dossier as a case file. Decoration sits around the content and never covers it. */
+function Section({ label, children }: { label: string; children: string }) {
+  return (
+    <section className="pf-section">
+      <h2 className="pf-heading">{label}</h2>
+      <p>{children}</p>
+    </section>
+  );
+}
+
+/**
+ * The dossier as a classified PERSONAL FILE. Decoration lives in the frame and margins;
+ * the guest's real role text is never covered, redacted or obscured.
+ */
 export function CaseFile({ dossier, slug }: { dossier: Dossier; slug: string }) {
-  // Only show what the host has filled in.
-  const fields = (
-    [
-      ["Archetype", dossier.archetype],
-      ["Cover story", dossier.cover_story],
-      ["Secret motive", dossier.secret_motive],
-      ["Ally", dossier.ally],
-      ["Rival", dossier.rival],
-      ["Storyline", dossier.storyline],
-    ] satisfies [string, string | null][]
-  ).filter((field): field is [string, string] => Boolean(field[1]));
+  const codename = dossier.codename ?? slug;
+  const fileNo = fileNumber(codename);
 
   return (
-    <section className="step show case-file">
-      <Fingerprint />
-
-      <div className="case-head">
-        <figure className="subject-photo">
-          <div className="subject-frame">
-            <Silhouette />
-          </div>
-          <span className="case-stamp" aria-hidden="true">
-            Classified
-          </span>
-          <figcaption>Subject · photo withheld</figcaption>
-        </figure>
-        <div className="case-meta">
+    <article className="step show personal-file">
+      <header className="pf-band">
+        <div className="pf-band-text">
           <span className="tag">TOP SECRET</span>
-          <p className="dim">{"// Operative dossier"}</p>
-          {dossier.codename && (
-            <p className="case-ref">
-              File <b>{dossier.codename}</b>
-            </p>
-          )}
-          <p className="case-ref">
-            Status <b>Active</b>
+          <p className="pf-label">
+            <b>Personal file</b>
+            <span>
+              Operative dossier · <span className="nowrap">File no. {fileNo}</span>
+            </span>
           </p>
         </div>
+        <span className="pf-stamp" aria-hidden="true">
+          Classified
+        </span>
+      </header>
+
+      <div className="pf-top">
+        <figure className="pf-photo">
+          <div className="pf-frame">
+            <Silhouette />
+            <Fingerprint />
+            <span className="pf-withheld" aria-hidden="true">
+              Withheld
+            </span>
+          </div>
+          <figcaption>Subject photograph · withheld</figcaption>
+        </figure>
+
+        <div className="pf-data">
+          <p className="pf-key">Codename</p>
+          <h1 className="pf-codename">{codename}</h1>
+          <dl className="pf-meta">
+            {dossier.display_name && (
+              <div>
+                <dt>Alias</dt>
+                <dd>{dossier.display_name}</dd>
+              </div>
+            )}
+            {dossier.archetype && (
+              <div>
+                <dt>Archetype</dt>
+                <dd>{dossier.archetype}</dd>
+              </div>
+            )}
+            <div>
+              <dt>File no.</dt>
+              <dd>{fileNo}</dd>
+            </div>
+            <div>
+              <dt>Status</dt>
+              <dd>Active</dd>
+            </div>
+            <div>
+              {/* Flavour only: a permanently redacted line, never real role content. */}
+              <dt>Handler</dt>
+              <dd>
+                <span className="redact-bar" role="img" aria-label="Redacted" />
+              </dd>
+            </div>
+          </dl>
+        </div>
       </div>
 
-      <h1 className="case-name">{dossier.display_name ?? "Classified"}</h1>
-
-      {fields.map(([label, value]) => (
-        <div className="row stacked" key={label}>
-          <b>{label}</b>
-          <span>{value}</span>
-        </div>
-      ))}
-
-      <div className="case-foot">
-        <div className="doc-id">
-          <Barcode value={slug} />
-          <span>File ref {dossier.codename ?? "classified"}</span>
-        </div>
+      {/* The real role content. Empty optional fields are omitted. */}
+      <div className="pf-body">
+        {dossier.cover_story && <Section label="Cover story">{dossier.cover_story}</Section>}
+        {dossier.secret_motive && <Section label="Secret motive">{dossier.secret_motive}</Section>}
+        {(dossier.ally || dossier.rival) && (
+          <div className="pf-pair">
+            {dossier.ally && <Section label="Ally">{dossier.ally}</Section>}
+            {dossier.rival && <Section label="Rival">{dossier.rival}</Section>}
+          </div>
+        )}
+        {dossier.storyline && <Section label="Storyline">{dossier.storyline}</Section>}
       </div>
 
-      <p className="stamp case-sign-off">Commit this to memory. Trust no one.</p>
-    </section>
+      <p className="stamp pf-sign-off">Commit this to memory. Trust no one.</p>
+
+      <footer className="pf-foot">
+        <Barcode value={slug} />
+        <p className="pf-foot-text">
+          <span>File no. {fileNo}</span>
+          <span>Do not duplicate</span>
+        </p>
+      </footer>
+    </article>
   );
 }
