@@ -21,6 +21,13 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - `/agent/[slug]` — a cast guest's dossier, server-rendered (service role) from the **`signups`** row with that `slug` and status `cast`/`sent`; themed 404 otherwise. The slug is the codename plus a random suffix (e.g. `the-magpie-3f9a1c07be`) so URLs can't be guessed.
 - `/admin/login` — magic-link sign-in (`signInWithOtp`) → `/auth/callback` route handler exchanges the code → `/admin`.
 - `/admin` — hosts' signups dashboard (view, change status, delete, link to casting). `/admin/cast/[id]` — cast a guest. `/admin/library` — role library CRUD. All gated in `app/admin/(gated)/layout.tsx` and, independently, by RLS via `is_admin()`. Allowlist = the `admins` table (`supabase/admins.sql`), nowhere else.
+- Guest pages live in the `src/app/(guest)/` route group (URLs unchanged), whose layout wraps them in `GuestShell` (theme toggle + document chrome). The root `not-found.tsx` also uses `GuestShell`; `app/admin/not-found.tsx` is the plain admin 404.
+
+## Themes (guest pages only)
+- Two modes: **CLASSIFIED** (dark, the default — never follow the system preference) and **DECLASSIFIED** (aged manila). Same markup; only CSS tokens change: `:root` vs `:root[data-theme="declassified"]` in `globals.css`. Never hardcode colours — add a token for both modes.
+- `src/app/theme.ts` holds the storage key (`onyx-theme`) and the inline `<head>` script that applies the saved theme before paint; it skips `/admin` and `/auth`. `src/app/theme-toggle.tsx` is the stamp button.
+- **Admin is never themed** — no `GuestShell`, no toggle, always dark. Emails keep their own inline styles.
+- The dossier case file (`src/app/(guest)/agent/[slug]/case-file.tsx`) only decorates; real dossier text must never be covered or obscured.
 
 ## Data model
 - `signups` — enlisted guests. Casting **copies** a library role onto the guest's own columns (`display_name`, `codename`, `archetype`, `cover_story`, `secret_motive`, `ally`, `rival`, `storyline`), sets `status = 'cast'` and a `slug`. Editing or deleting a library role never touches a cast guest.

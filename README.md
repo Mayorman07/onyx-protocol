@@ -151,9 +151,23 @@ Sign in as an admin (`classified700@gmail.com`) for steps 1–6.
 10. **Send dossier:** cast a guest (use an address you can check), then click **Send dossier** on their cast page. You see "Dossier transmitted", and a "Your Cover Identity Has Been Assigned" email arrives from `agent@theonyxprotocol.xyz` with their display name and an **Open your dossier** button that opens their `/agent/[slug]` page. Their status becomes `sent`, and the dashboard's Dossier column shows the send time.
 11. **Re-send:** click **Re-send dossier**, then **Confirm re-send**. A second email arrives and the send time updates.
 12. **Stale dossier:** after sending, change a field on the guest's cast page (e.g. the storyline) and save. The dashboard shows **⚠ Edited since** in the Dossier column, and the cast page shows the out-of-date warning. Saving again without changing anything doesn't set the flag. Re-send the dossier and the flag clears.
-13. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
+13. **Themes:** in a private window, open `/`. It loads in the dark CLASSIFIED look. Tap the **CLASSIFIED** stamp (top right); the page turns to aged manila paper and the stamp reads **DECLASSIFIED**. Reload and visit `/rsvp`: it stays declassified with no flash of the dark theme. Open `/admin/login`: it's still dark, with no stamp. Check both themes on a phone: there's no sideways scrolling, and the dossier page shows every field.
+14. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
 
-## 4. Run it
+## 4. Themes (guest pages)
+
+Guest pages (`/`, `/rsvp`, `/agent/[slug]` and the 404 page) come in two looks, framed as two states of the same classified document:
+
+- **CLASSIFIED:** the dark onyx terminal. Every first-time visitor gets this, whatever their device's light/dark setting.
+- **DECLASSIFIED:** an aged manila dossier, with paper grain, a soft vignette, worn rubber stamps and black-ink redaction bars.
+
+The rubber-stamp button in the top-right corner switches between them. The choice is saved in the viewer's browser (`localStorage`, key `onyx-theme`), and a small script in `<head>` applies it before the page paints, so there's no flash of the wrong theme. If storage is blocked, the switch still works for that visit.
+
+Both looks share the same markup; only CSS colour tokens change (`:root` vs `:root[data-theme="declassified"]` in `globals.css`). Every guest page is framed by document chrome: TOP SECRET // NOFORN strips, a document ID with a CSS barcode, and a LEVEL 30 clearance box. The dossier page is laid out as a case file, with a withheld subject photo, a CLASSIFIED stamp, a faint fingerprint and a barcode of the guest's slug. The decoration never covers the dossier text.
+
+**The admin area is never themed:** it has no toggle and no chrome, and the `<head>` script skips `/admin` and `/auth` URLs, so it always stays dark. Emails are unaffected, since they carry their own inline styles.
+
+## 5. Run it
 
 ```bash
 npm install
