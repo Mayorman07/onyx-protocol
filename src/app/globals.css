@@ -8,6 +8,8 @@
   --grey: #9aa09c;
   --red: #c0392b;
   --line: #2b2f2e;
+  --rule: #2b2f2e;
+  --field: #0c0d0d;
   --redact: #9aa09c;
   --on-accent: #0c0d0d;
   --on-red: #fff;
@@ -27,23 +29,28 @@
  * Only ever set on guest pages (see src/app/theme.ts); admin never gets this attribute.
  */
 :root[data-theme="daylight"] {
-  --bg: #e7e0cd;
-  --panel: #f3eddc;
-  --ink: #1c1813;
-  --dim: #5f5647;
-  --gold: #7a5c2b;
-  --lemon: #6e4c16;
-  --grey: #8c836f;
-  --red: #9b2d20;
-  --line: #cfc4a8;
-  --redact: #1c1813;
-  --on-accent: #f3eddc;
-  --on-red: #f7f1e3;
-  --red-glow: rgba(155, 45, 32, 0.18);
-  --panel-edge: 3px double #a8966c;
-  --panel-shadow: 0 1px 1px rgba(60, 42, 14, 0.08), 0 12px 28px -14px rgba(60, 42, 14, 0.4);
-  /* Fine paper grain: inline SVG fractal noise tinted sepia, no external image. */
-  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .26 0 0 0 0 .11 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* A crisp off-white sheet on a warm manila folder: clear steps between page, panel and ink. */
+  --bg: #e6d6ad;
+  --panel: #fbf7ec;
+  --ink: #15110c;
+  --dim: #584b36;
+  --gold: #6c4b17;
+  --lemon: #573a0e;
+  --grey: #8a7a58;
+  --red: #a3281a;
+  --line: #d3c191;
+  --rule: #b0975c;
+  --field: #f3ebd5;
+  --redact: #15110c;
+  --on-accent: #fbf7ec;
+  --on-red: #fdf8ee;
+  --red-glow: rgba(163, 40, 26, 0.18);
+  --panel-edge: 3px double #b0975c;
+  --panel-shadow: 0 1px 2px rgba(60, 42, 14, 0.12), 0 14px 30px -16px rgba(60, 42, 14, 0.45);
+  /* Fine paper grain: inline SVG fractal noise tinted sepia, no external image. Fainter on the
+     panels than on the folder so body text stays crisp. */
+  --texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .26 0 0 0 0 .11 0 0 0 .18 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --panel-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .26 0 0 0 0 .11 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   color-scheme: light;
 }
 
@@ -90,11 +97,11 @@ body,
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse at 50% 35%, transparent 55%, rgba(92, 64, 20, 0.2) 100%);
+  background: radial-gradient(ellipse at 50% 35%, transparent 60%, rgba(92, 64, 20, 0.16) 100%);
 }
 
 :root[data-theme="daylight"] .step {
-  background-image: var(--texture);
+  background-image: var(--panel-texture);
 }
 
 /* Bronze heading with a black-ink accent; the dark theme's lemon accent is too close to bronze on paper. */
@@ -168,7 +175,7 @@ body,
   align-items: center;
   gap: 16px;
   padding: 14px 20px 10px;
-  border-bottom: 3px double var(--line);
+  border-bottom: 3px double var(--rule);
 }
 
 .doc-class {
@@ -211,7 +218,7 @@ body,
   gap: 14px 20px;
   margin-top: -48px;
   padding: 14px 20px 32px;
-  border-top: 3px double var(--line);
+  border-top: 3px double var(--rule);
 }
 
 .doc-foot .doc-class {
@@ -222,7 +229,7 @@ body,
   display: inline-grid;
   justify-items: center;
   padding: 4px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--rule);
   color: var(--dim);
   font-size: 0.62rem;
   letter-spacing: 0.22em;
@@ -620,7 +627,7 @@ button:disabled {
   width: 100%;
   font: inherit;
   color: var(--ink);
-  background: var(--bg);
+  background: var(--field);
   border: 1px solid var(--line);
   border-bottom: 1px solid var(--grey);
   padding: 12px 14px;
