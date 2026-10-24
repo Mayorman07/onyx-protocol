@@ -1,5 +1,6 @@
 import { Barcode } from "../../../barcode";
 import { fileNumber } from "./file-codes";
+import { ThreatAssessment } from "./threat-assessment";
 
 // A cast guest's own copy of their role, stored on their signup row.
 export type Dossier = {
@@ -124,6 +125,8 @@ export function CaseFile({ dossier, slug }: { dossier: Dossier; slug: string }) 
           </dl>
         </div>
       </div>
+
+      <ThreatAssessment codename={codename} />
 
       {/* The real role content. Empty optional fields are omitted. */}
       <div className="pf-body">

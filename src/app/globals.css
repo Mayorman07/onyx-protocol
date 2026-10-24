@@ -648,6 +648,86 @@ button:disabled {
   background: var(--redact);
 }
 
+/* Threat assessment: blocky segmented meters, like an intelligence readout. Decorative. */
+.pf-threat {
+  margin: 20px 0 8px;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.pf-threat-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+}
+
+.pf-threat-head .pf-heading {
+  margin: 0;
+}
+
+.pf-threat-head span {
+  color: var(--dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.pf-meters {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pf-meters li {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) 2.6em;
+  align-items: center;
+  gap: 12px;
+}
+
+.pf-meter-label {
+  color: var(--lemon);
+  font-size: 0.7rem;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pf-meter {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  max-width: 220px;
+}
+
+.pf-meter i {
+  height: 12px;
+  border: 1px solid var(--line);
+}
+
+.pf-meter i.on {
+  border-color: var(--lemon);
+  background: var(--lemon);
+}
+
+.pf-meters li.is-threat .pf-meter i.on {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.pf-meter-value {
+  color: var(--dim);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+
 .pf-body {
   margin-top: 8px;
 }

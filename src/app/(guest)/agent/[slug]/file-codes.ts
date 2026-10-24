@@ -15,3 +15,11 @@ function hash(text: string): number {
 export function fileNumber(codename: string): string {
   return `ONX-30-${String(hash(`file:${codename}`) % 10000).padStart(4, "0")}`;
 }
+
+export const TRAITS = ["Cunning", "Loyalty", "Deception", "Influence", "Threat level"] as const;
+export const TRAIT_MAX = 5;
+
+/** Each trait's level, 2–5 out of 5, seeded by the codename and the trait name. */
+export function traitLevels(codename: string): { trait: (typeof TRAITS)[number]; level: number }[] {
+  return TRAITS.map((trait) => ({ trait, level: 2 + (hash(`${trait}:${codename}`) % 4) }));
+}
