@@ -97,6 +97,11 @@ body,
   background-image: var(--texture);
 }
 
+/* Bronze heading with a black-ink accent; the dark theme's lemon accent is too close to bronze on paper. */
+:root[data-theme="declassified"] h2 span {
+  color: var(--ink);
+}
+
 /* Panels */
 
 .step {
