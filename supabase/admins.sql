@@ -5,9 +5,11 @@ create table if not exists admins (
   email text primary key
 );
 
+-- REPLACE THESE before running: use your real admin (host) email addresses, in lowercase.
+-- Only addresses in this table can see the admin dashboard.
 insert into admins (email) values
-  ('classified700@gmail.com'),
-  ('omotad@gmail.com')
+  ('admin1@example.com'),
+  ('admin2@example.com')
 on conflict (email) do nothing;
 
 -- SECURITY DEFINER so policies can check the allowlist without recursing into admins' own RLS.
