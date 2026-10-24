@@ -48,31 +48,38 @@ Security is enforced by the database, not just the UI.
 
 ## Architecture
 
-```
-  Guest                         Server (Next.js on Vercel)                    Supabase / Resend
-  ─────                         ──────────────────────────                    ─────────────────
-  /  invite
-    │
-    ▼
-  /rsvp  ── enlist ──────────▶  Server Action (service role) ───────────────▶ insert into signups
-    │                              └─ after response ───────────────────────▶ Resend: confirmation email
-    ▼
-  "MISSION ACCEPTED"
+```mermaid
+flowchart TB
+    subgraph enlistment["Phase 1 · Public enlistment"]
+        direction LR
+        enlist(["Guest enlists<br/>at /rsvp"]) -->|"insert"| signupsNew[("Supabase<br/>signups")]
+        signupsNew -->|"on new signup"| confirm["Resend<br/>confirmation email<br/>from handler@"]
+    end
 
-  Host                          Server (Next.js on Vercel)                    Supabase / Resend
-  ────                          ──────────────────────────                    ─────────────────
-  /admin/login ── magic link ─▶ /auth/callback (session cookie)
-  /admin/library ─ edit roles ▶ Server Actions (as signed-in user) ─ RLS ───▶ dossiers
-  /admin/cast/[id] ─ cast ────▶ Server Action (as signed-in user) ── RLS ───▶ copy role onto signup + slug
-                   ─ send ────▶ Server Action (as signed-in user) ───────────▶ Resend: dossier email
-                                                                             ▶ status = sent, sent_at
+    subgraph casting["Phase 2 · Host-only casting"]
+        direction LR
+        login(["Host signs in to /admin<br/>Supabase magic link"]) -->|"is_admin()"| cast["Cast a role<br/>from the library"]
+        cast -->|"role + slug"| signupsCast[("Supabase<br/>signups")]
+        signupsCast --> send["Send Dossier"]
+        send --> teaser["Resend<br/>teaser email<br/>from agent@"]
+        teaser -->|"link"| dossierPage(["Guest opens<br/>/agent/[slug]"])
+    end
 
-  Guest (from email)
-  /agent/[slug] ─────────────▶ Server Component (service role, read-only) ──▶ cast signup by slug
-    │
-    ▼
-  PERSONAL FILE dossier
+    enlistment --> casting
+
+    classDef supabase fill:#e8f6ee,stroke:#3ecf8e,color:#1c1c1c
+    classDef resend fill:#f2f2f2,stroke:#111111,color:#111111
+    classDef person fill:#fff8e1,stroke:#b8860b,color:#1c1c1c
+    class signupsNew,signupsCast supabase
+    class confirm,teaser resend
+    class enlist,login,dossierPage person
 ```
+
+<sub>Green: Supabase (Postgres + RLS + Auth) · Grey: Resend (email) · Gold: guest and host touchpoints</sub>
+
+- **Guest writes** (enlistment) and the **public dossier read** run on the server with the service-role key.
+- **Every host action** (casting, the role library, sending) runs as the signed-in user, so Row Level Security and `is_admin()` decide what's allowed.
+- **Emails** are sent server-side through Resend, from a verified custom domain.
 
 ## Running locally
 
