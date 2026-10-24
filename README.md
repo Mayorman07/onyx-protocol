@@ -151,19 +151,34 @@ Sign in as an admin (`classified700@gmail.com`) for steps 1–6.
 10. **Send dossier:** cast a guest (use an address you can check), then click **Send dossier** on their cast page. You see "Dossier transmitted", and a "Your Cover Identity Has Been Assigned" email arrives from `agent@theonyxprotocol.xyz` with their display name and an **Open your dossier** button that opens their `/agent/[slug]` page. Their status becomes `sent`, and the dashboard's Dossier column shows the send time.
 11. **Re-send:** click **Re-send dossier**, then **Confirm re-send**. A second email arrives and the send time updates.
 12. **Stale dossier:** after sending, change a field on the guest's cast page (e.g. the storyline) and save. The dashboard shows **⚠ Edited since** in the Dossier column, and the cast page shows the out-of-date warning. Saving again without changing anything doesn't set the flag. Re-send the dossier and the flag clears.
-13. **Themes:** in a private window, open `/`. It loads in the dark CLASSIFIED look. Tap the **CLASSIFIED** stamp (top right); the page turns to aged manila paper and the stamp reads **DECLASSIFIED**. Reload and visit `/rsvp`: it stays declassified with no flash of the dark theme. Open `/admin/login`: it's still dark, with no stamp. Check both themes on a phone: there's no sideways scrolling, and the dossier page shows every field.
-14. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
+13. **Themes:** in a private window, open `/`. It loads in the dark COVERT look. Tap the **COVERT** stamp (top right); the page turns to paper and the stamp reads **DAYLIGHT**. Both keep the TOP SECRET chrome. Reload and visit `/rsvp`: it stays DAYLIGHT with no flash of the dark theme. Open `/admin/login`: it's still dark, with no stamp.
+14. **Personal file:** open a cast guest's dossier link in both themes, on a phone and on desktop. It shows the photo box, codename data column, threat-assessment bars, labelled sections and barcode footer, with every field readable and no sideways scrolling. Reload: the bars are identical. A guest with no ally, rival or storyline shows no empty sections.
+15. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
 
 ## 4. Themes (guest pages)
 
-Guest pages (`/`, `/rsvp`, `/agent/[slug]` and the 404 page) come in two looks, framed as two states of the same classified document:
+Guest pages (`/`, `/rsvp`, `/agent/[slug]` and the 404 page) come in two looks. They're two visual treatments of the same top secret file, not different secrecy levels, so both keep the TOP SECRET stamp and chrome:
 
-- **CLASSIFIED:** the dark onyx terminal. Every first-time visitor gets this, whatever their device's light/dark setting.
-- **DECLASSIFIED:** an aged manila dossier, with paper grain, a soft vignette, worn rubber stamps and black-ink redaction bars.
+- **COVERT:** the dark onyx terminal. Every first-time visitor gets this, whatever their device's light/dark setting.
+- **DAYLIGHT:** a crisp off-white sheet on a warm manila folder, with faint paper grain, a soft vignette, worn rubber stamps and black-ink redaction bars.
 
-The rubber-stamp button in the top-right corner switches between them. The choice is saved in the viewer's browser (`localStorage`, key `onyx-theme`), and a small script in `<head>` applies it before the page paints, so there's no flash of the wrong theme. If storage is blocked, the switch still works for that visit.
+The rubber-stamp button in the top-right corner shows the current mode and switches between them. The choice is saved in the viewer's browser (`localStorage`, key `onyx-theme`, value `covert` or `daylight`), and a small script in `<head>` applies it before the page paints, so there's no flash of the wrong theme. A choice saved under the light theme's old name (`declassified`) still loads as DAYLIGHT. If storage is blocked, the switch still works for that visit.
 
-Both looks share the same markup; only CSS colour tokens change (`:root` vs `:root[data-theme="declassified"]` in `globals.css`). Every guest page is framed by document chrome: TOP SECRET // NOFORN strips, a document ID with a CSS barcode, and a LEVEL 30 clearance box. The dossier page is laid out as a case file, with a withheld subject photo, a CLASSIFIED stamp, a faint fingerprint and a barcode of the guest's slug. The decoration never covers the dossier text.
+Both looks share the same markup; only CSS colour tokens change (`:root` vs `:root[data-theme="daylight"]` in `globals.css`). Every guest page is framed by document chrome: TOP SECRET // NOFORN strips, a document ID with a CSS barcode, and a LEVEL 30 clearance box.
+
+### The dossier: a personal file
+
+`/agent/[slug]` is laid out as a classified **PERSONAL FILE**:
+
+- **Header band:** TOP SECRET stamp, "Personal file / Operative dossier", a file number and a CLASSIFIED stamp in the corner margin.
+- **Top row:** a subject-photo box (silhouette, WITHHELD stamp, faint fingerprint) beside a data column with the codename as the file title, the alias (display name), archetype, file number, status and a permanently redacted "handler" line.
+- **Threat assessment:** segmented meters for cunning, loyalty, deception, influence and threat level.
+- **Body:** labelled sections for cover story, secret motive, ally, rival and storyline. Empty optional sections are left out.
+- **Footer band:** a barcode of the slug, the file number and DO NOT DUPLICATE.
+
+On phones it collapses to a single column. Decoration stays in the frame and margins and never covers the role text; redaction is only used on the decorative handler line.
+
+The file number and threat-assessment bars are **decorative and generated from the codename** (a stable hash, 2–5 bars out of 5 per trait), so the same agent always shows the same values. Nothing is entered or stored, and the bars aren't real data.
 
 **The admin area is never themed:** it has no toggle and no chrome, and the `<head>` script skips `/admin` and `/auth` URLs, so it always stays dark. Emails are unaffected, since they carry their own inline styles.
 

@@ -24,10 +24,11 @@ A spy / 1920s-speakeasy murder-mystery **party invite** web app. Guests RSVP and
 - Guest pages live in the `src/app/(guest)/` route group (URLs unchanged), whose layout wraps them in `GuestShell` (theme toggle + document chrome). The root `not-found.tsx` also uses `GuestShell`; `app/admin/not-found.tsx` is the plain admin 404.
 
 ## Themes (guest pages only)
-- Two modes: **CLASSIFIED** (dark, the default — never follow the system preference) and **DECLASSIFIED** (aged manila). Same markup; only CSS tokens change: `:root` vs `:root[data-theme="declassified"]` in `globals.css`. Never hardcode colours — add a token for both modes.
+- Two modes: **COVERT** (dark, the default — never follow the system preference) and **DAYLIGHT** (paper). They're two treatments of the same top secret file, so both keep the TOP SECRET chrome; never name a mode in a way that implies a different secrecy level. Same markup; only CSS tokens change: `:root` vs `:root[data-theme="daylight"]` in `globals.css`. Never hardcode colours — add a token for both modes. The head script also accepts the legacy stored value `declassified` as daylight.
 - `src/app/theme.ts` holds the storage key (`onyx-theme`) and the inline `<head>` script that applies the saved theme before paint; it skips `/admin` and `/auth`. `src/app/theme-toggle.tsx` is the stamp button.
 - **Admin is never themed** — no `GuestShell`, no toggle, always dark. Emails keep their own inline styles.
-- The dossier case file (`src/app/(guest)/agent/[slug]/case-file.tsx`) only decorates; real dossier text must never be covered or obscured.
+- The dossier is a PERSONAL FILE (`src/app/(guest)/agent/[slug]/case-file.tsx`). Decoration only frames it; real role text must never be covered, obscured or redacted (redaction bars are for flavour lines only). It must collapse to one column on phones.
+- File numbers and threat-assessment bars are flavour derived from a hash of the codename (`file-codes.ts`); keep them deterministic and never add DB fields for them.
 
 ## Data model
 - `signups` — enlisted guests. Casting **copies** a library role onto the guest's own columns (`display_name`, `codename`, `archetype`, `cover_story`, `secret_motive`, `ally`, `rival`, `storyline`), sets `status = 'cast'` and a `slug`. Editing or deleting a library role never touches a cast guest.
