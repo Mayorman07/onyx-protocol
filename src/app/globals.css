@@ -466,6 +466,129 @@ button:disabled {
   color: var(--red);
 }
 
+/* Dossier: case file */
+
+.case-file {
+  position: relative;
+  overflow: hidden;
+}
+
+.case-file > * {
+  position: relative;
+  z-index: 1;
+}
+
+.case-file .fingerprint {
+  position: absolute;
+  z-index: 0;
+  top: -16px;
+  right: -26px;
+  width: 150px;
+  color: var(--ink);
+  opacity: 0.07;
+  pointer-events: none;
+}
+
+.case-head {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.subject-photo {
+  position: relative;
+  flex: 0 0 92px;
+  margin: 0;
+}
+
+.subject-frame {
+  display: grid;
+  place-items: end center;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.subject-frame svg {
+  width: 82%;
+  color: var(--dim);
+  opacity: 0.55;
+}
+
+.subject-photo figcaption {
+  margin-top: 6px;
+  color: var(--dim);
+  font-size: 0.56rem;
+  line-height: 1.4;
+  letter-spacing: 0.16em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.case-stamp {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  padding: 1px 6px;
+  border: 2px solid var(--red);
+  color: var(--red);
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  font-size: 0.6rem;
+  font-weight: bold;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+:root[data-theme="declassified"] .case-stamp {
+  border: 3px double var(--red);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: var(--stamp-wear);
+  mask-image: var(--stamp-wear);
+}
+
+.case-meta {
+  min-width: 0;
+}
+
+.case-meta .dim {
+  margin: 10px 0 6px;
+}
+
+.case-ref {
+  margin: 2px 0 0;
+  color: var(--dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.case-ref b {
+  color: var(--lemon);
+}
+
+/* Sized so the longest seeded name ("THE CARTOGRAPHER") fits a phone; longer custom names hyphenate. */
+.case-name {
+  margin: 0.55em 0 0.3em;
+  font-size: clamp(1.5rem, 6.6vw, 3rem);
+  letter-spacing: 0.03em;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.case-foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 22px;
+}
+
+.case-sign-off {
+  margin-top: 18px;
+}
+
 /* Forms */
 
 .field {

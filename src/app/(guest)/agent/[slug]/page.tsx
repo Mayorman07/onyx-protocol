@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { CaseFile, type Dossier } from "./case-file";
 
 // Render on request and block until the dossier is fetched, so unknown slugs get a real 404.
 export const instant = false;
@@ -8,18 +9,6 @@ export const instant = false;
 export const metadata: Metadata = {
   title: "Dossier — The Onyx Protocol",
   robots: { index: false, follow: false },
-};
-
-// A cast guest's own copy of their role, stored on their signup row.
-type Dossier = {
-  codename: string | null;
-  display_name: string | null;
-  archetype: string | null;
-  cover_story: string | null;
-  secret_motive: string | null;
-  ally: string | null;
-  rival: string | null;
-  storyline: string | null;
 };
 
 async function getDossier(slug: string): Promise<Dossier | null> {
@@ -39,34 +28,9 @@ export default async function AgentPage({ params }: PageProps<"/agent/[slug]">) 
   const dossier = await getDossier(slug);
   if (!dossier) notFound();
 
-  // Only show what the host has filled in.
-  const fields = (
-    [
-      ["Archetype", dossier.archetype],
-      ["Cover story", dossier.cover_story],
-      ["Secret motive", dossier.secret_motive],
-      ["Ally", dossier.ally],
-      ["Rival", dossier.rival],
-      ["Storyline", dossier.storyline],
-    ] satisfies [string, string | null][]
-  ).filter((field): field is [string, string] => Boolean(field[1]));
-
   return (
     <main>
-      <section className="step show">
-        <span className="tag">TOP SECRET</span>
-        <p className="dim">{`// Operative dossier${dossier.codename ? ` · ${dossier.codename}` : ""}`}</p>
-        <h1>{dossier.display_name ?? "Classified"}</h1>
-        {fields.map(([label, value]) => (
-          <div className="row stacked" key={label}>
-            <b>{label}</b>
-            <span>{value}</span>
-          </div>
-        ))}
-        <p className="stamp" style={{ marginTop: 26 }}>
-          Commit this to memory. Trust no one.
-        </p>
-      </section>
+      <CaseFile dossier={dossier} slug={slug} />
     </main>
   );
 }
