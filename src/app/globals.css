@@ -603,12 +603,14 @@ button:disabled {
   text-transform: uppercase;
 }
 
-/* Codenames are hyphenated slugs (the-cartographer), so long ones break cleanly at the hyphen. */
+/* The file title is the display name (THE CARTOGRAPHER); it wraps between words, and an
+   unusually long single word hyphenates rather than overflowing. */
 .pf-codename {
   margin: 2px 0 14px;
   font-size: clamp(1.45rem, 5.6vw, 2.2rem);
   letter-spacing: 0.04em;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .pf-meta {

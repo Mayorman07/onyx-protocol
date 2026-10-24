@@ -59,8 +59,10 @@ function Section({ label, children }: { label: string; children: string }) {
  * the guest's real role text is never covered, redacted or obscured.
  */
 export function CaseFile({ dossier, slug }: { dossier: Dossier; slug: string }) {
+  // The codename seeds the generated flavour; the guest only ever sees the clean display name.
   const codename = dossier.codename ?? slug;
   const fileNo = fileNumber(codename);
+  const title = dossier.display_name ?? codename.replace(/-/g, " ");
 
   return (
     <article className="step show personal-file">
@@ -93,14 +95,8 @@ export function CaseFile({ dossier, slug }: { dossier: Dossier; slug: string }) 
 
         <div className="pf-data">
           <p className="pf-key">Codename</p>
-          <h1 className="pf-codename">{codename}</h1>
+          <h1 className="pf-codename">{title}</h1>
           <dl className="pf-meta">
-            {dossier.display_name && (
-              <div>
-                <dt>Alias</dt>
-                <dd>{dossier.display_name}</dd>
-              </div>
-            )}
             {dossier.archetype && (
               <div>
                 <dt>Archetype</dt>

@@ -171,7 +171,7 @@ Both looks share the same markup; only CSS colour tokens change (`:root` vs `:ro
 `/agent/[slug]` is laid out as a classified **PERSONAL FILE**:
 
 - **Header band:** TOP SECRET stamp, "Personal file / Operative dossier", a file number and a CLASSIFIED stamp in the corner margin.
-- **Top row:** a subject-photo box (silhouette, WITHHELD stamp, faint fingerprint) beside a data column with the codename as the file title, the alias (display name), archetype, file number, status and a permanently redacted "handler" line.
+- **Top row:** a subject-photo box (silhouette, WITHHELD stamp, faint fingerprint) beside a data column titled with the guest's display name (e.g. THE CARTOGRAPHER, never the hyphenated slug), then archetype, file number, status and a permanently redacted "handler" line.
 - **Threat assessment:** segmented meters for cunning, loyalty, deception, influence and threat level.
 - **Body:** labelled sections for cover story, secret motive, ally, rival and storyline. Empty optional sections are left out.
 - **Footer band:** a barcode of the slug, the file number and DO NOT DUPLICATE.
