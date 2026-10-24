@@ -148,16 +148,108 @@ body,
   mask-image: var(--stamp-wear);
 }
 
-/* Guest page header: holds the theme stamp, top-right. */
-.doc-bar {
+/* Guest document chrome: classification strips top and bottom, theme stamp top-right. */
+.doc-bar,
+.doc-foot {
   position: relative;
   z-index: 2;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
   max-width: 640px;
   margin: 0 auto;
-  padding: 14px 20px 0;
+}
+
+.doc-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px 10px;
+  border-bottom: 3px double var(--line);
+}
+
+.doc-class {
+  margin: 0;
+  color: var(--dim);
+  font-size: 0.66rem;
+  line-height: 1.5;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+/* Each phrase wraps as a unit on narrow screens. */
+.doc-class span {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .doc-class {
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+  }
+
+  .doc-bar .theme-stamp {
+    padding: 4px 8px;
+    font-size: 0.64rem;
+    letter-spacing: 0.16em;
+  }
+}
+
+.doc-class span + span::before {
+  content: "— ";
+}
+
+.doc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px 20px;
+  margin-top: -48px;
+  padding: 14px 20px 32px;
+  border-top: 3px double var(--line);
+}
+
+.doc-foot .doc-class {
+  flex: 0 0 100%;
+}
+
+.clearance {
+  display: inline-grid;
+  justify-items: center;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.clearance b {
+  color: var(--red);
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+}
+
+.doc-id {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  color: var(--dim);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.barcode {
+  display: inline-flex;
+  height: 26px;
+  opacity: 0.8;
+}
+
+.barcode i {
+  display: block;
+  background: var(--ink);
 }
 
 .theme-stamp {
