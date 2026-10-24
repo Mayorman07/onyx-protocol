@@ -1,197 +1,159 @@
 # The Onyx Protocol
 
-A spy / 1920s-speakeasy murder-mystery party invite. Guests enlist through the site, and the hosts cast each of them a secret agent identity, served on their own dossier page.
+A spy-themed murder-mystery party platform. Guests enlist through a classified-dossier invite, and the hosts cast each of them a secret agent identity, delivered by email as a private dossier.
 
-- `/` — the invite
-- `/rsvp` — name + email enlistment form
-- `/agent/[slug]` — a cast guest's dossier, e.g. `/agent/the-magpie-3f9a1c07be` (themed 404 for any other slug)
-- `/admin` — the hosts' signups dashboard and casting (magic-link login at `/admin/login`)
-- `/admin/library` — the role library editor
+**Live:** [www.theonyxprotocol.xyz](https://www.theonyxprotocol.xyz)
 
-Built with Next.js (App Router, TypeScript) and Supabase.
+---
 
-## How it works
+## What it does
 
-1. **Enlistment.** A guest submits their name and email at `/rsvp`. A server action adds them to `signups` with status `enlisted`, the page shows a "MISSION ACCEPTED" confirmation, and a confirmation email goes out from `handler@theonyxprotocol.xyz`. The email is best-effort: it's sent after the response, so if it fails the enlistment still stands (the failure is logged on the server). Someone who's already enlisted doesn't get a second email.
-2. **Role library.** `dossiers` is the hosts' pool of role templates (the 12 seeded agents to start with). The hosts add, edit and delete roles at `/admin/library`.
-3. **Casting.** From the dashboard, a host opens a guest's **Cast** page, picks a library role and edits the guest's copy (including a storyline written for them). Saving writes the role onto the guest's `signups` row, sets their status to `cast` and gives them an unguessable dossier URL (`/agent/<codename>-<random hex>`).
-   - **Copy-on-cast:** the guest gets their own copy, so later edits to the library, or deleting the role, never change a guest who is already cast.
-   - **No double casting:** a codename can belong to only one cast or sent guest at a time. The app shows a warning, and a database index enforces it.
-   - **Fixing mistakes:** a guest can be recast to a different role (which frees their old codename and issues a new URL) or un-cast back to `enlisted` (which clears their role and retires their URL).
-4. **Sending.** On a cast guest's page, **Send dossier** emails them a teaser from `agent@theonyxprotocol.xyz`: their display name and an **Open your dossier** button linking to their `/agent/[slug]` page. The cover story, motive, ally, rival and storyline are only on the dossier page, never in the email. A successful send sets the guest's status to `sent` and records `sent_at`. Re-sending asks for confirmation and updates `sent_at`. The dashboard's **Dossier** column shows who has been sent theirs and when.
+The Onyx Protocol runs a party in two phases.
 
-## 1. Environment variables
+**1. Public enlistment.** Guests open the invite, a typewriter-decrypt briefing revealed step by step, and enlist with their name and email. They see a "MISSION ACCEPTED" confirmation and receive a confirmation email. No role is assigned yet.
 
-Copy `.env.example` to `.env.local` and fill in the values from your Supabase project (**Project Settings → API**):
+**2. Host-only casting.** The hosts sign in to a private dashboard, pick a role for each guest from an editable role library, tailor it (cover story, secret motive, ally, rival, a personal storyline), and send it. The guest receives an email with a link to their own dossier page, an unguessable URL laid out as a classified personal file.
 
-| Variable | Where it's used |
+## Features
+
+- **Two-phase guest flow:** open enlistment first, deliberate casting later, so hosts can balance the cast before anyone gets a role.
+- **Magic-link admin auth** via Supabase Auth, restricted to an allowlist of host emails.
+- **Role library with copy-on-cast:** casting copies a role onto the guest, so editing or deleting a library role never changes someone already cast. A codename can only be held by one guest at a time.
+- **Transactional email** through Resend on a custom domain: an enlistment confirmation and a dossier teaser email.
+- **Unguessable dossier URLs:** each guest's page lives at `/agent/<codename>-<random hex>`, generated server-side with a cryptographic RNG.
+- **COVERT / DAYLIGHT themes:** a dark terminal look and an aged-paper look. The choice persists per viewer and is applied before first paint, so there's no flash of the wrong theme.
+- **PERSONAL FILE dossier layout:** subject-photo box, file data, labelled role sections, a CSS barcode and a threat-assessment readout. The stats are derived deterministically from the codename, so each agent always shows the same profile with no data entry.
+- **Stale-dossier tracking:** a database trigger records when a guest's role is edited, and the dashboard flags anyone whose dossier changed after it was emailed.
+
+## Tech stack
+
+| Layer | Technology |
 | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Project URL. Safe to expose. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public anon key. Safe to expose. Used for admin sign-in and for every admin read and write (signups, casting, role library), which run as the signed-in user so RLS decides what they can do. On its own (signed out) it can't read or write any table. |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Secret.** Bypasses row level security. Used only on the server (`src/lib/supabase-admin.ts`) for the public enlistment insert and the public dossier page, never for admin actions. Never give it a `NEXT_PUBLIC_` prefix. |
-| `RESEND_API_KEY` | **Secret.** Resend API key for `theonyxprotocol.xyz`. Used only on the server (`src/lib/email.ts`). Never give it a `NEXT_PUBLIC_` prefix. |
-| `EMAIL_FROM_HANDLER` | Sender for enlistment confirmations: `"The Handler <handler@theonyxprotocol.xyz>"`. |
-| `EMAIL_FROM_AGENT` | Sender for dossier emails: `"The Onyx Protocol <agent@theonyxprotocol.xyz>"`. |
-| `NEXT_PUBLIC_SITE_URL` | Base URL used to build dossier links in emails: `https://onyx-protocol-gamma.vercel.app` (change it if you move to a custom domain). |
+| Framework | Next.js (App Router, Server Components, Server Actions) + TypeScript |
+| Database & auth | Supabase: Postgres, Row Level Security, Auth (magic links via `@supabase/ssr`) |
+| Email | Resend, sending from a verified custom domain |
+| Hosting | Vercel |
+| Styling | Hand-authored CSS with design tokens; no CSS framework or component library |
 
-`.env.local` is git-ignored. On Vercel, add the same variables under **Project Settings → Environment Variables**.
+## Security model
 
-**Emails won't send until you add `RESEND_API_KEY`, `EMAIL_FROM_HANDLER`, `EMAIL_FROM_AGENT` and `NEXT_PUBLIC_SITE_URL` to both `.env.local` and Vercel** (then restart `npm run dev` / redeploy). Until then, enlistment still works but no confirmation email goes out, and **Send dossier** shows an error.
+Security is enforced by the database, not just the UI.
 
-## 2. Database
+- **Row Level Security on every table.** `signups`, `dossiers` and `admins` all have RLS enabled. With only the public anon key, nothing can be read or written.
+- **Admin access runs as the signed-in user.** Every dashboard read and write uses a Supabase client built from the anon key plus the host's session cookie, never the service-role key. RLS policies built on an `is_admin()` function decide what that user can see and change, so even a signed-in non-admin who reaches an admin page gets zero rows back.
+- **The allowlist is enforced twice.** The app checks it in the admin layout (non-admins see "CLEARANCE REVOKED" and no data), and the database checks it again in every policy. The allowlist itself lives in one place, the `admins` table.
+- **Privileged keys stay on the server.** The Supabase service-role key is used only for the public enlistment insert and the public dossier read. It and the Resend API key are read only in modules that import `server-only`, so the build fails if either is ever imported into client code. Neither appears in the browser bundle.
+- **Race-safe role assignment.** A partial unique index guarantees a codename belongs to at most one cast guest, so two concurrent casts can't collide even if they pass the app-level check at the same moment.
+- **Unguessable, revocable dossier links.** Dossier slugs carry 40 bits of randomness and are only served for cast guests. Un-casting a guest clears the slug, which retires the link.
 
-### New database
+## Architecture
 
-In the Supabase dashboard, open **SQL Editor** and run, in order:
+```
+  Guest                         Server (Next.js on Vercel)                    Supabase / Resend
+  ─────                         ──────────────────────────                    ─────────────────
+  /  invite
+    │
+    ▼
+  /rsvp  ── enlist ──────────▶  Server Action (service role) ───────────────▶ insert into signups
+    │                              └─ after response ───────────────────────▶ Resend: confirmation email
+    ▼
+  "MISSION ACCEPTED"
 
-1. `supabase/schema.sql` — creates `signups` (including the per-guest role columns) and `dossiers`, and enables RLS on both. `signups.email` is unique (emails are saved lowercased), so each address can enlist once; a repeat submission shows "You're already enlisted, Agent — await your instructions" instead of adding a row.
-2. `supabase/seed.sql` — inserts 12 starter roles into `dossiers`.
-3. `supabase/admins.sql` — creates the `admins` allowlist (seeded with the two host emails), the `is_admin()` function and the admin-only RLS policies on `signups`.
-4. `supabase/casting.sql` — adds the admin-only RLS policies on `dossiers`, so the role library editor works.
-5. `supabase/sending.sql` — adds `signups.sent_at` (already in `schema.sql`, so on a new database this changes nothing).
-6. `supabase/edit-tracking.sql` — adds `signups.role_edited_at` and the trigger that stamps it whenever a guest's role fields change.
+  Host                          Server (Next.js on Vercel)                    Supabase / Resend
+  ────                          ──────────────────────────                    ─────────────────
+  /admin/login ── magic link ─▶ /auth/callback (session cookie)
+  /admin/library ─ edit roles ▶ Server Actions (as signed-in user) ─ RLS ───▶ dossiers
+  /admin/cast/[id] ─ cast ────▶ Server Action (as signed-in user) ── RLS ───▶ copy role onto signup + slug
+                   ─ send ────▶ Server Action (as signed-in user) ───────────▶ Resend: dossier email
+                                                                             ▶ status = sent, sent_at
 
-`admins.sql`, `casting.sql`, `sending.sql` and `edit-tracking.sql` are safe to re-run.
-
-### Upgrading for stale-dossier warnings (keeps all rows)
-
-**Run `supabase/edit-tracking.sql` in the SQL Editor before deploying this version.** The dashboard and cast page read `signups.role_edited_at`, so they fail until it exists. The script adds that column and a `before update` trigger on `signups`. The trigger sets `role_edited_at = now()` only when one of the role fields (`display_name`, `codename`, `archetype`, `cover_story`, `secret_motive`, `ally`, `rival`, `storyline`) actually changes, whether from the cast page or by hand in Supabase. Status and `sent_at` changes don't count, and neither does a save that changes nothing. Existing rows start with no value, so nothing is flagged until a role is next edited.
-
-If `role_edited_at` is later than `sent_at`, the guest's dossier email is out of date. The dashboard shows **⚠ Edited since** next to the send time, and the cast page shows a warning above the send button. Nothing is re-sent automatically; re-sending clears the flag.
-
-### Upgrading for dossier emails (keeps all rows)
-
-**Run `supabase/sending.sql` in the SQL Editor before deploying this version.** The dashboard and cast page read `signups.sent_at`, so they fail until it exists. It runs one statement:
-
-```sql
-alter table signups add column if not exists sent_at timestamptz;
+  Guest (from email)
+  /agent/[slug] ─────────────▶ Server Component (service role, read-only) ──▶ cast signup by slug
+    │
+    ▼
+  PERSONAL FILE dossier
 ```
 
-### Upgrading an existing database (keeps all rows)
+## Running locally
 
-If your database was set up before casting existed, **run `supabase/casting.sql` in the SQL Editor before deploying this version.** The public dossier page and the dashboard read the new columns, so they fail until the upgrade is applied. `casting.sql` only adds what's missing and drops nothing. It runs:
+### 1. Install
 
-```sql
-alter table signups
-  add column if not exists display_name text,
-  add column if not exists codename text,
-  add column if not exists archetype text,
-  add column if not exists cover_story text,
-  add column if not exists secret_motive text,
-  add column if not exists ally text,
-  add column if not exists rival text,
-  add column if not exists storyline text,
-  add column if not exists slug text unique;
-
-create unique index if not exists signups_cast_codename_key
-  on signups (codename) where status in ('cast', 'sent');
+```bash
+git clone <this-repo-url>
+cd onyx-protocol
+npm install
 ```
 
-It then creates the four `dossiers` policies (select, insert, update, delete, each using `is_admin()`). The existing `signups` policies already cover the new columns, because RLS policies apply to whole rows, so admins can update them with no further change. The old `dossiers.assigned_to_email`, `slug` and `sent_at` columns are no longer used, but they're left in place so no data is lost.
+### 2. Environment variables
 
-### Roles
+Copy the example file and fill in real values:
 
-Each role needs a `codename` (lowercase letters, numbers and single hyphens, unique in the library), `display_name`, `cover_story` and `secret_motive`. `archetype`, `ally`, `rival` and `storyline` are optional, and the dossier page only shows the ones that are filled in. Nothing in the app depends on how many roles there are.
-
-### Clearing test data
-
-To clear test signups, including their castings, without touching the role library or the admins:
-
-```sql
-delete from signups;
+```bash
+cp .env.example .env.local
 ```
 
-## 3. Admin access
+| Variable | Purpose |
+| --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (**Project Settings → API**) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon (public) key |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key. **Secret, server-only.** Never give it a `NEXT_PUBLIC_` prefix. |
+| `RESEND_API_KEY` | Resend API key. **Secret, server-only.** |
+| `EMAIL_FROM_HANDLER` | Sender for enlistment confirmations, e.g. `"The Handler <handler@your-domain>"` |
+| `EMAIL_FROM_AGENT` | Sender for dossier emails, e.g. `"The Onyx Protocol <agent@your-domain>"` |
+| `NEXT_PUBLIC_SITE_URL` | Base URL used to build dossier links in emails, e.g. `http://localhost:3000` locally |
 
-The hosts sign in at `/admin/login` with a magic link (Supabase Auth, via `@supabase/ssr` cookies). Access is checked in two places:
+`.env.local` is git-ignored. For deployment, add the same variables to your Vercel project. The sender addresses must be on a domain you've verified in Resend.
 
-- **In the app:** every `/admin` page redirects signed-out visitors to the login page. A signed-in user who isn't on the allowlist sees "CLEARANCE REVOKED — this terminal is not authorised" and no data.
-- **In the database:** the dashboard, casting and library screens read and write as the signed-in user, not with the service role. RLS policies built on `is_admin()` return zero rows to non-admins and block their writes, even if they reach a page.
+### 3. Database
 
-The allowlist lives only in the `admins` table. To add or remove a host, edit it in the SQL Editor:
+In the Supabase dashboard, open **SQL Editor** and run the files in `supabase/` **in this order**:
+
+| # | File | What it does |
+| --- | --- | --- |
+| 1 | `schema.sql` | Creates the `signups` and `dossiers` tables, the codename uniqueness index, and enables RLS |
+| 2 | `seed.sql` | Inserts 12 starter roles into the role library |
+| 3 | `admins.sql` | Creates the `admins` allowlist, the `is_admin()` function and the admin-only policies on `signups` |
+| 4 | `casting.sql` | Adds the admin-only policies on `dossiers` (plus in-place upgrade columns for older databases) |
+| 5 | `sending.sql` | Ensures `signups.sent_at` exists for dossier-send tracking |
+| 6 | `edit-tracking.sql` | Adds `signups.role_edited_at` and the trigger that powers stale-dossier warnings |
+
+Files 3–6 are idempotent and safe to re-run.
+
+**Set your hosts.** `admins.sql` seeds the allowlist with the hosts' emails. Edit it to your own addresses before running it, or manage the table afterwards:
 
 ```sql
-insert into admins (email) values ('new.host@example.com');
+insert into admins (email) values ('host@example.com');   -- lowercase
 delete from admins where email = 'old.host@example.com';
 ```
 
-Use lowercase emails.
+### 4. Supabase Auth configuration
 
-### Supabase dashboard setup (required for magic links)
+Magic-link sign-in needs these settings in the Supabase dashboard:
 
 1. **Authentication → URL Configuration**
-   - **Site URL:** `https://onyx-protocol-gamma.vercel.app`
-   - **Redirect URLs:** add all four:
+   - **Site URL:** your production URL, e.g. `https://www.theonyxprotocol.xyz`
+   - **Redirect URLs:** add your local and production origins and their callbacks:
      - `http://localhost:3000`
      - `http://localhost:3000/auth/callback`
-     - `https://onyx-protocol-gamma.vercel.app`
-     - `https://onyx-protocol-gamma.vercel.app/auth/callback`
-2. **Authentication → Providers → Email:** make sure the Email provider is enabled, so magic links / OTP work.
-3. **SQL Editor:** run `supabase/admins.sql` and `supabase/casting.sql` (see [Database](#2-database)).
+     - `https://<your-production-domain>`
+     - `https://<your-production-domain>/auth/callback`
+2. **Authentication → Providers → Email:** make sure the Email provider is enabled.
 
-**Things to know:**
+Supabase's built-in auth email is rate-limited on the free tier (a few emails per hour), which is fine for a handful of hosts. Open the magic link in the same browser you requested it from.
 
-- Supabase's built-in email sender on the free tier is rate-limited to a few auth emails per hour. That's fine for the two hosts and for testing; if you hit the limit, wait and try again. Guest-facing emails will go through Resend later; this sender is only for admin login.
-- Open the magic link in the same browser you requested it from. The sign-in flow stores a one-time verifier in that browser's cookies.
-- Any email can request a link and sign in, but only addresses in `admins` see any data.
-
-### Test script
-
-Sign in as an admin (`classified700@gmail.com`) for steps 1–6.
-
-1. **Dashboard:** `/admin` lists signups. Changing a status and deleting a signup both take effect.
-2. **Role library:** at `/admin/library`, create a role, edit it and delete it. A codename that's already in the library, or isn't lowercase-with-hyphens, shows a themed error and nothing is saved.
-3. **Cast:** on the dashboard, click **Cast** for a guest. Pick a role, change a field, add a storyline and save. The guest's status becomes `cast`, their codename shows on the dashboard, and a dossier link like `/agent/the-magpie-3f9a1c07be` appears.
-4. **Dossier:** open that link while signed out. It shows the guest's edited copy of the role; an unknown slug shows the themed 404.
-5. **No double casting:** cast a second guest. The role you just used is marked "(taken)" and can't be picked, and typing its codename by hand shows a warning and doesn't save.
-6. **Fix mistakes:** on the dashboard, a guest with a role can only be switched between `cast` and `sent`; `enlisted` isn't offered. Un-cast the first guest from their cast page instead. They return to `enlisted` and their old dossier link now 404s. Recast them to a different role; it saves with a new link.
-7. **Non-admin:** sign out, then sign in with any other address. You see "CLEARANCE REVOKED" on `/admin`, `/admin/library` and every cast page, and no data.
-8. **Public enlistment:** submit the form at `/rsvp` with a new email. You see MISSION ACCEPTED, a new `enlisted` row appears on the dashboard, and a "Mission Accepted — Await Further Instructions" email arrives from `handler@theonyxprotocol.xyz`. Submitting the same email again shows "already enlisted" and sends no second email.
-9. **Email failure is non-fatal:** temporarily set `RESEND_API_KEY` to an invalid value and restart. Enlisting still shows MISSION ACCEPTED and adds the row; the server log shows `enlistment email failed`. Restore the key afterwards.
-10. **Send dossier:** cast a guest (use an address you can check), then click **Send dossier** on their cast page. You see "Dossier transmitted", and a "Your Cover Identity Has Been Assigned" email arrives from `agent@theonyxprotocol.xyz` with their display name and an **Open your dossier** button that opens their `/agent/[slug]` page. Their status becomes `sent`, and the dashboard's Dossier column shows the send time.
-11. **Re-send:** click **Re-send dossier**, then **Confirm re-send**. A second email arrives and the send time updates.
-12. **Stale dossier:** after sending, change a field on the guest's cast page (e.g. the storyline) and save. The dashboard shows **⚠ Edited since** in the Dossier column, and the cast page shows the out-of-date warning. Saving again without changing anything doesn't set the flag. Re-send the dossier and the flag clears.
-13. **Themes:** in a private window, open `/`. It loads in the dark COVERT look. Tap the **COVERT** stamp (top right); the page turns to paper and the stamp reads **DAYLIGHT**. Both keep the TOP SECRET chrome. Reload and visit `/rsvp`: it stays DAYLIGHT with no flash of the dark theme. Open `/admin/login`: it's still dark, with no stamp.
-14. **Personal file:** open a cast guest's dossier link in both themes, on a phone and on desktop. It shows the photo box, codename data column, threat-assessment bars, labelled sections and barcode footer, with every field readable and no sideways scrolling. Reload: the bars are identical. A guest with no ally, rival or storyline shows no empty sections.
-15. **Checks:** `npm run build`, `npm run lint` and `npx tsc --noEmit` pass, and searching for `SERVICE_ROLE` and `RESEND_API_KEY` only finds server-only files.
-
-## 4. Themes (guest pages)
-
-Guest pages (`/`, `/rsvp`, `/agent/[slug]` and the 404 page) come in two looks. They're two visual treatments of the same top secret file, not different secrecy levels, so both keep the TOP SECRET stamp and chrome:
-
-- **COVERT:** the dark onyx terminal. Every first-time visitor gets this, whatever their device's light/dark setting.
-- **DAYLIGHT:** a crisp off-white sheet on a warm manila folder, with faint paper grain, a soft vignette, worn rubber stamps and black-ink redaction bars.
-
-The rubber-stamp button in the top-right corner shows the current mode and switches between them. The choice is saved in the viewer's browser (`localStorage`, key `onyx-theme`, value `covert` or `daylight`), and a small script in `<head>` applies it before the page paints, so there's no flash of the wrong theme. A choice saved under the light theme's old name (`declassified`) still loads as DAYLIGHT. If storage is blocked, the switch still works for that visit.
-
-Both looks share the same markup; only CSS colour tokens change (`:root` vs `:root[data-theme="daylight"]` in `globals.css`). Every guest page is framed by document chrome: TOP SECRET // NOFORN strips, a document ID with a CSS barcode, and a LEVEL 30 clearance box.
-
-### The dossier: a personal file
-
-`/agent/[slug]` is laid out as a classified **PERSONAL FILE**:
-
-- **Header band:** TOP SECRET stamp, "Personal file / Operative dossier", a file number and a CLASSIFIED stamp in the corner margin.
-- **Top row:** a subject-photo box (silhouette, WITHHELD stamp, faint fingerprint) beside a data column titled with the guest's display name (e.g. THE CARTOGRAPHER, never the hyphenated slug), then archetype, file number, status and a permanently redacted "handler" line.
-- **Threat assessment:** segmented meters for cunning, loyalty, deception, influence and threat level.
-- **Body:** labelled sections for cover story, secret motive, ally, rival and storyline. Empty optional sections are left out.
-- **Footer band:** a barcode of the slug, the file number and DO NOT DUPLICATE.
-
-On phones it collapses to a single column. Decoration stays in the frame and margins and never covers the role text; redaction is only used on the decorative handler line.
-
-The file number and threat-assessment bars are **decorative and generated from the codename**, so the same agent always shows the same values. Nothing is entered or stored, and the bars aren't real data. Each agent gets a characterful mix on a 1–5 scale: at most one trait at 5/5, at least one low trait (1 or 2), and no more than one repeated value. The codename picks the profile shape and which trait leads, so different agents read differently.
-
-**The admin area is never themed:** it has no toggle and no chrome, and the `<head>` script skips `/admin` and `/auth` URLs, so it always stays dark. Emails are unaffected, since they carry their own inline styles.
-
-## 5. Run it
+### 5. Run
 
 ```bash
-npm install
 npm run dev      # http://localhost:3000
-```
-
-Other commands:
-
-```bash
-npm run build    # production build — must pass before deploying
+npm run build    # production build
 npm run lint
 ```
+
+Then:
+
+- Open `/` for the invite and `/rsvp` to enlist.
+- Sign in at `/admin/login` with an allowlisted email to manage signups, the role library and casting.
+
+---
+
+Built as a one-off, bespoke event platform, with the security of a production app and the presentation of a classified file.
